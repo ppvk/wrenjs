@@ -28,4 +28,4 @@ emmake make
 cd ../
 
 # Compile the custom libwren.a with the js interface
-emcc -O3 wren/libwren.a -o out/wren.js -s EXPORTED_FUNCTIONS=$FUNCTIONS --memory-init-file 0 --post-js src/*.js
+emcc -O3 wren/libwren.a -o out/wren.html -s EXPORTED_FUNCTIONS=$FUNCTIONS --memory-init-file 0 --post-js src/*.js
