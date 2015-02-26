@@ -1,16 +1,28 @@
 # wrenjs
-This is my attempt to use [emscripten](http://kripken.github.io/emscripten-site/)
-to port Bob Nystrom's [wren](http://munificent.github.io/wren/) language to Javacript.
+This is my attempt at using [emscripten](http://kripken.github.io/emscripten-site/)
+to transpile Bob Nystrom's [wren](http://munificent.github.io/wren/) language to Javascript.
 
-### If all you care about is the wren.js file, it's in the /out directory.
+## Build Instructions
+I develop on an Ubuntu box, so these directions are meant for that sort of system.
 
-If you want to make a fresh version, that is a bit more complicated. Basically
-emscripten needs to be installed and emcc needs to be on your PATH.
+You will need:
+- build-essential
+- cmake
+- python2.7
+- nodejs
+- java
 
-Then run:
+After these are installed, run
+
+    ./setup.sh
+
+That command will download the master branch of wren, get the latest portable emscripten setup and install it in the 'emscripten' directory. As your system will have to build emscripten from scratch, this process takes quite a while.
+
+
+Once finished, run:
 
     ./build.sh
-For more information look in 'build.sh'.
+This puts the emscripten tools on your PATH temporarily, moves the wrenjs specific c files into wren's src folder, and compiles the wren VM to Javascript.
 
 
 #API
