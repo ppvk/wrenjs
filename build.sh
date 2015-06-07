@@ -23,4 +23,4 @@ make builtin
 $EMSCRIPTEN/emmake make
 
 # Compile the custom libwren.a with the js interface
-$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.html -s EXPORTED_FUNCTIONS=$FUNCTIONS -s ASSERTIONS=1 -Werror --memory-init-file 0 --post-js ../src/*.js
+$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.js -s EXPORTED_FUNCTIONS=$FUNCTIONS -s ASSERTIONS=1 -Werror --memory-init-file 0 --post-js ../src/*.js
