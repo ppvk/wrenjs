@@ -2,6 +2,11 @@
 #include "emscripten.h"
 #include "wren_js.h"
 
+// To load a wren module, we look for a JS string with its name and use its content.
+char * loadModuleFromJS(WrenVM* vm, const char* name) {
+    return emscripten_run_script_string(name);
+}
+
 WrenVM* vm;
 
 void newVM() {
@@ -11,6 +16,7 @@ void newVM() {
         
     WrenConfiguration config;
     config.bindForeignMethodFn = wrenBindJS;
+    config.loadModuleFn = loadModuleFromJS;
     config.initialHeapSize = 1024 * 1024 * 100;
     config.reallocateFn = NULL;
     config.minHeapSize = 0;
@@ -33,15 +39,3 @@ void interpret(char* sourcePath, char* source) {
     }
     wrenInterpret(vm, sourcePath, source);
 }
-
-
-
-
-
-
-
-
-
-
-
-

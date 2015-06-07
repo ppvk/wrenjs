@@ -39,7 +39,7 @@ WrenForeignMethodFn wrenBindJS(WrenVM* vm,
   return NULL;
 }
 
-
+// Loads the JS wren library
 void wrenLoadJSLibrary(WrenVM* vm)
 {
   wrenInterpret(vm, "", jsLibSource);

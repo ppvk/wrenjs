@@ -11,6 +11,5 @@ WrenForeignMethodFn wrenBindJS(WrenVM* vm,
                                const char* className,
                                bool isStatic,
                                const char* signature);
-
 #endif
 
