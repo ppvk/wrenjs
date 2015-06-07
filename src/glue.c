@@ -1,5 +1,6 @@
 #include "wren.h"
 #include "emscripten.h"
+#include "wren_js.h"
 
 WrenVM* vm;
 
@@ -8,13 +9,14 @@ void newVM() {
         EM_ASM(throw('VM already created!'););
     }
         
-
     WrenConfiguration config;
+    config.bindForeignMethodFn = wrenBindJS;
     config.initialHeapSize = 1024 * 1024 * 100;
     config.reallocateFn = NULL;
     config.minHeapSize = 0;
     config.heapGrowthPercent = 0;
     vm = wrenNewVM(&config);
+    wrenLoadJSLibrary(vm);
 }
 
 void freeVM() {
@@ -31,3 +33,15 @@ void interpret(char* sourcePath, char* source) {
     }
     wrenInterpret(vm, sourcePath, source);
 }
+
+
+
+
+
+
+
+
+
+
+
+
