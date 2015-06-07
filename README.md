@@ -1,7 +1,6 @@
 # wrenjs
-This is my attempt at using [emscripten](http://kripken.github.io/emscripten-site/)
+Using [emscripten](http://kripken.github.io/emscripten-site/)
 to transpile Bob Nystrom's [wren](http://munificent.github.io/wren/) language to Javascript.
-
 
 #JavaScript API
 
@@ -24,11 +23,13 @@ On the wren side of things there is a 'JS' class that facilitates simple wren/js
 At the moment, it has four methods. 
 
 ### JS.run(string)
-    //runs its string as JavaScript. It doesn't return anything, but is useful for firing off a function or two.
+    //runs its string as JavaScript. It doesn't return anything, 
+    //but is useful for firing off a function or two.
     JS.run(string)
     
 ### JS.getString(string)
-    // calling 'JS.getString' works similarly to 'JS.run,' but returns the result as a String
+    // calling 'JS.getString' works similarly to 'JS.run,' 
+    //but returns the result as a String
     var wrenString = JS.getString(string)
     // for example, to access the browser's userAgent in wren:
     var userAgent = JS.getString("window.navigator.userAgent")
@@ -43,7 +44,8 @@ At the moment, it has four methods.
     JS.event(type, data)
     
 ## Module imports
-    // when you 'import' a module, wren expects it to be a JavaScript string or a function that returns a string.
+    // when you 'import' a module, wren expects it to be a JavaScript string 
+    // or a function that returns a string.
     import "string"
 
 # Build Instructions 
