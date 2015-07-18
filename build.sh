@@ -16,9 +16,6 @@ source emscripten/emsdk_portable/emsdk_env.sh
 # Move into the wren directory
 cd wren
 
-# update the built in wren libraries
-make builtin
-
 # Use emscripten to generate a bytecode libwren.a, with extras
 $EMSCRIPTEN/emmake make
 
