@@ -11,14 +11,51 @@ class JS {
 class JsObject {
   new(js) {
     _id = JS.getInt("Wren.register(" + js + ")")
+    IO.print(_id)
+    _reference = "Wren.lookup(" + _id.toString + ")"
+    IO.print(_reference)
   }
+
+  native {
+    return _reference
+  }
+
   call() {
-    JS.run("Wren.call(" + _id + ")")
+    var js = _reference + "()"
+    IO.print(js)
+    JS.run(js)
   }
-  call(method) {
-    JS.run("Wren.callMethod(" + _id + ", '" + method + "')")
+  call(args) {
+    var js = _reference + "("
+    js = js + args[0].toString
+    if (args.count > 1) {
+        for ( i in 1..(args.count-1) ) {
+          js = js + "," + args[i].toString
+        }
+    }
+    js = js + ")"
+
+    IO.print(js)
+    JS.run(js)
   }
+
+  callMethod(method) {
+    var js = _reference + "." + method + "()"
+    JS.run(js)
+  }
+  callMethod(method, args) {
+    var js = _reference + "." + method + "("
+    js = js + args[0].toString
+    if (args.count > 1) {
+        for ( i in 1..(args.count-1) ) {
+          js = js+ "," + args[i].toString
+        }
+    }
+    js = js + ")"
+    JS.run(js)
+  }
+
   free() {
-    JS.run("Wren.free(" + _id + ")")
+    JS.run("Wren.free(" + _id.toString + ")")
   }
 }

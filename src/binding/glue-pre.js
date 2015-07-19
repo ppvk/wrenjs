@@ -19,12 +19,4 @@ var Wren = new Object();
   Wren.free = function(id) {
     Wren.WREN_OBJECTS[id] = null;
   }
-
-  Wren.call = function(object) {
-    Wren.lookup[object]();
-  }
-  Wren.callMethod = function(object, method) {
-    Wren.lookup[object]();
-  }
-
 // Pre - Emscripten //
