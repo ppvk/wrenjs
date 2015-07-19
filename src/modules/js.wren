@@ -11,9 +11,7 @@ class JS {
 class JsObject {
   new(js) {
     _id = JS.getInt("Wren.register(" + js + ")")
-    IO.print(_id)
     _reference = "Wren.lookup(" + _id.toString + ")"
-    IO.print(_reference)
   }
 
   native {
@@ -22,7 +20,6 @@ class JsObject {
 
   call() {
     var js = _reference + "()"
-    IO.print(js)
     JS.run(js)
   }
   call(args) {
@@ -35,7 +32,6 @@ class JsObject {
     }
     js = js + ")"
 
-    IO.print(js)
     JS.run(js)
   }
 
