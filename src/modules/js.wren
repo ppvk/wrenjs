@@ -4,12 +4,12 @@ class JS {
     foreign static getInt(string)
 
     static getObject(string) {
-      return new JsObject(string)
+      return JsObject.new(string)
     }
 }
 
 class JsObject {
-  new(js) {
+  construct new(js) {
     _id = JS.getInt("Wren.register(" + js + ")")
     _reference = "Wren.lookup(" + _id.toString + ")"
   }
