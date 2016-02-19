@@ -1,4 +1,5 @@
 wren
-emscripten
+emsdk
 out
 .idea
+*~

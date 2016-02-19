@@ -1,28 +1,29 @@
 #!/bin/bash
 
-# Exported Functions - the '_' is required. NO spaces please.
-FUNCTIONS="['_newVM','_freeVM','_interpret']"
+# Setup the PATH
+source emsdk/emsdk_portable/emsdk_env.sh
+
+# clone wren
+git clone https://github.com/munificent/wren.git
+
+# Create a place for our outgoing wren.js file
+mkdir -p out
 
 # Copy our js-interop source files to wren's src directory
-cp src/binding/*.c wren/src/vm
-cp src/binding/*.h wren/src/vm
-
-# Copy our wren-interop source files to wren's interop directory
-cp src/modules/*.wren wren/builtin
-
-# Setup the PATH
- source emscripten/emsdk_portable/emsdk_env.sh
+cp src/*.c wren/src/vm
+cp src/*.h wren/src/vm
 
 # Move into the wren directory
 cd wren
 
-# inject js.wren
-make builtin
-
-echo "This is when I'd normally build"
+# clean up previous wren builds
+make clean
 
 # Use emscripten to generate a bytecode libwren.a, with extras
-$EMSCRIPTEN/emmake make
+emmake make static
+
+# Exported Functions - the '_' is required. NO spaces please.
+fn="['_shimNewVM','_wrenFreeVM','_wrenInterpret']"
 
 # Compile the custom libwren.a with the js interface
-$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.js -s EXPORTED_FUNCTIONS=$FUNCTIONS -s ASSERTIONS=1 -Werror --memory-init-file 0 --pre-js ../src/binding/glue-pre.js --post-js ../src/binding/glue-post.js
+$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.js -s NO_FILESYSTEM=1 -s NO_BROWSER=1 -s NO_EXIT_RUNTIME=1 -s EXPORTED_FUNCTIONS=$fn -Werror --memory-init-file 0 --pre-js ../src/js-glue/glue-pre.js --post-js ../src/shim.js --post-js ../src/js-glue/glue-post.js
