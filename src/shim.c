@@ -8,7 +8,7 @@ static void shimWriteFn(WrenVM* vm, const char* toLog) {
         return;
     }
     char buffer[1024];
-    snprintf(buffer, sizeof buffer, "Wren.writeFn(%p, '%s')", vm, toLog);
+    snprintf(buffer, sizeof buffer, "Wren.writeFn(%p, \"%s\")", vm, toLog);
     emscripten_run_script(buffer);
 }
 

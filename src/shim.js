@@ -48,7 +48,9 @@ WrenVM.prototype.writeFn = function(string) {
 };
 
 WrenVM.prototype.interpret = function(wren) {
-    Wren.interpret(this._vm, wren);
+    var code = Wren.interpret(this._vm, wren);
+    // 0 is good
+    return code;
 }
 
 /* Static Methods */
