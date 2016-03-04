@@ -13,9 +13,9 @@ static void shimWriteFn(WrenVM* vm, const char* toLog) {
 }
 
 // Looks for Strings by key in the `WrenVM.module` object.
-char* loadModule(WrenVM* vm, const char* module) {
+char* shimloadModuleFn(WrenVM* vm, const char* module) {
     char buffer[1024];
-    snprintf(buffer, sizeof buffer, "WrenVM.module.%s", module);
+    snprintf(buffer, sizeof buffer, "Wren.loadModuleFn(%p, \"%s\")", vm, module);
     return emscripten_run_script_string(buffer);
 }
 
@@ -66,6 +66,6 @@ WrenVM* shimNewVM() {
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.bindForeignMethodFn = shimForeignMethodFn;
-    config.loadModuleFn = loadModule;
+    config.loadModuleFn = shimloadModuleFn;
     return wrenNewVM(&config);
 }

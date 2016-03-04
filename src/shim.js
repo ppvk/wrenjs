@@ -21,7 +21,12 @@ Wren = {
 
     writeFn: function(c_vm, string) {
         Wren.VM_MAP[c_vm].writeFn(string);    
+    },
+
+    loadModuleFn: function(c_vm, string) {
+        return Wren.VM_MAP[c_vm].loadModuleFn(string);
     }
+
 };
 
 /* Constructor */
@@ -34,9 +39,6 @@ WrenVM = function(disallowJS) {
         this.interpret('class JsObject {}');    
     }
 };
-
-/* Static properties */
-WrenVM.module = {}; 
 
 /* Methods */
 WrenVM.prototype.freeVM = function() {
@@ -53,27 +55,9 @@ WrenVM.prototype.interpret = function(wren) {
     return code;
 }
 
-/* Static Methods */
-WrenVM.loadPageModules = function() {
-    var imp = document.querySelectorAll('[type="language/wren"]');
-    for (var i = imp.length -1 ; i >= 0 ; i--) {
-        if (imp[i].hasAttribute('src')) {      
-            var url = imp[i].getAttribute('src');
-            var module = imp[i].getAttribute('module');  
-            var file = new XMLHttpRequest();
-            file.onreadystatechange = function() {
-                if (file.readyState === 4) {
-                    if (file.status === 200) {
-                        WrenVM.module[module] = file.responseText;
-                    }
-                }
-            }
-            file.open("GET", url, false);
-            file.send(null);
-        }
-    }
+WrenVM.prototype.loadModuleFn = function(module) {
+    throw('Module loading function not defined!');
 }
-
 
 WrenVM._lookup = function(id) {
     return Wren.WREN_OBJECTS[id];

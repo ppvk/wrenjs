@@ -10,6 +10,8 @@
 <body>
 
 <script type="language/wren" module="main">
+// This is inline wren.
+
 import "please" for Please
 import "js" for JS, JsObject
 
@@ -48,16 +50,47 @@ document.
   property("body").
   setProperty("innerHTML", " 'cleared!' ")
 
-
 </script>
+
 <script>
-    WrenVM.loadPageModules();
-    var vm = new WrenVM();
-    vm.writeFn = function(string) {
-      document.body.innerHTML += "<code>" + string + '<br> </code>';
+    // This block of code looks for "language/wren" script tags and loads them as 
+    // strings in the MODULES object.
+    var MODULES = {};
+    var imp = document.querySelectorAll('[type="language/wren"]');
+    for (var i = imp.length -1 ; i >= 0 ; i--) {
+        if (imp[i].hasAttribute('src')) {      
+            var url = imp[i].getAttribute('src');
+            var module = imp[i].getAttribute('module');  
+            var file = new XMLHttpRequest();
+            file.onreadystatechange = function() {
+                if (file.readyState === 4) {
+                    if (file.status === 200) {
+                        MODULES[module] = file.responseText;
+                    }
+                }
+            }
+            file.open("GET", url, false);
+            file.send(null);
+        }
     }
 
+    
+    // Constructs a new WrenVM
+    var vm = new WrenVM();
 
+    // Overrides the default 'writeFn', printing to the body instead of the console.
+    vm.writeFn = function(string) {
+      document.body.innerHTML += "<code>" + string + '<br> </code>';
+    };
+
+    // Overrides the 'loadModuleFn' so that the VM looks for modules in the MODULES object.
+    vm.loadModuleFn = function(module) {
+        return MODULES[module];
+    };
+
+    // Looks for the main script on the page, and runs it as wren code.
+    // By now, all the included modules should be loaded into the MODULES object 
+    // and ready for use.
     vm.interpret(document.querySelector('[module="main"]').innerHTML.replace(/<[^>]*>/g, ""));
 </script>
 </body>
