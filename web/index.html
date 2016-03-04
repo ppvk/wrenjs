@@ -4,52 +4,16 @@
     <meta charset="UTF-8">
     <title>WREN</title>
     <script src="../out/wren.js"></script>
-    <link type="language/wren" module="js" src="../modules/js.wren" />
     <link type="language/wren" module="please" src="https://raw.githubusercontent.com/EvanHahn/wren-please/master/please.wren" />
+    <link type="language/wren" module="js" src="../modules/js.wren" />
+    <link type="language/wren" module="js-test" src="../modules/js.test.wren" />
 </head>
 <body>
 
 <script type="language/wren" module="main">
 // This is inline wren.
-
-import "please" for Please
-import "js" for JS, JsObject
-
-var document = JS.wrap("document")
-
-// two native refs not equal
-var body = document.property("body")
-var body2 = JsObject.new("document.body")
-System.print(body.native + " != " + body2.native)
-Please.notEqual(body, body2)
-
-// two evaluated strings equal
-var bodyString = body.string
-var body2String = body2.string
-System.print(bodyString + " == " + body2String)
-Please.equal(bodyString, body2String)
-
-// clean up
-body.free()
-body2.free()
-System.print(body.string + " , " + body2.string)
-
-var console = JS.wrap("console")
-console.callMethod("log", ["'Hello World'"])
-console.free()
-
-var product = JS.wrap("42 + 1")
-System.print(product.num)
-
-var boolean = JS.wrap("false")
-System.print(boolean.bool)
-var notBoolean = JS.wrap("!" + boolean.native)
-System.print(notBoolean.bool)
-
-document.
-  property("body").
-  setProperty("innerHTML", " 'cleared!' ")
-
+// When we import 'js-test' we run all the 'please' tests on 'js'
+import "js-test"
 </script>
 
 <script>
@@ -73,7 +37,6 @@ document.
             file.send(null);
         }
     }
-
     
     // Constructs a new WrenVM
     var vm = new WrenVM();
