@@ -16,11 +16,11 @@ Wren = {
 
     freeVM: function(c_vm) {
         Wren.shimFreeVM(c_vm);
-        Wren.VM_MAP[c_vm] = null;
+        Wren.VM_MAP[c_vm] = undefined;
     },
 
     writeFn: function(c_vm, string) {
-        Wren.VM_MAP[c_vm].writeFn(string);    
+        Wren.VM_MAP[c_vm].writeFn(string);
     },
 
     loadModuleFn: function(c_vm, string) {
@@ -35,8 +35,8 @@ WrenVM = function(disallowJS) {
 
     // This makes it impossible for the 'main' script to use the JS module.
     if (disallowJS) {
-        this.interpret('class JS {}');    
-        this.interpret('class JsObject {}');    
+        this.interpret('class JS {}');
+        this.interpret('class JsObject {}');
     }
 };
 
@@ -72,4 +72,3 @@ WrenVM._register = function(object) {
 WrenVM._free = function(id) {
     Wren.WREN_OBJECTS[id] = null;
 };
-
