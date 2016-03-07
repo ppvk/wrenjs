@@ -19,4 +19,4 @@ circle["fill"] = "#FF8000"
 circle["stroke"] = "orangered"
 circle["linewidth"] = 5
 
-two.callMethod("update").free()
+JS.log(two.callMethod("update"))

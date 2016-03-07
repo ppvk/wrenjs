@@ -22,7 +22,7 @@ class JS {
       return bool_(makeSafe_(object) + "=== null")
     }
     static isUndefined(object) {
-      return bool_("typeof(" + makeSafe_(object) ") === 'undefined'")
+      return bool_("typeof(" + makeSafe_(object) + ") === 'undefined'")
     }
 }
 
@@ -54,7 +54,7 @@ class JsObject {
 
     // We don't want to save references to null or undefined.
     if (JS.isNull(this) || JS.isUndefined(this)) {
-      this.free();
+      this.free()
     }
   }
 
