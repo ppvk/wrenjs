@@ -64,9 +64,14 @@ WrenVM._lookup = function(id) {
 };
 
 WrenVM._register = function(object) {
-    Wren.WREN_OBJECTS[Wren.CURRENT_INDEX] = object;
-    Wren.CURRENT_INDEX++;
-    return Wren.CURRENT_INDEX - 1;
+  for (var index in Wren.WREN_OBJECTS) {
+    if (Wren.WREN_OBJECTS[index] === object)
+    return index;
+  }
+
+  Wren.WREN_OBJECTS[Wren.CURRENT_INDEX] = object;
+  Wren.CURRENT_INDEX++;
+  return Wren.CURRENT_INDEX - 1;
 };
 
 WrenVM._free = function(id) {

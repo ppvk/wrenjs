@@ -7,9 +7,13 @@ var params = {
   "height": 200
 }
 
-var two = JsObject.new("Two", [params])
-two.callMethod("appendTo", [elem]).free()
+JS.log(elem)
 
+var two = JsObject.new("Two", [params])
+
+JS.log(two)
+
+two.callMethod("appendTo", [elem])
 var circle = two.callMethod("makeCircle", [72, 100, 50])
 
 System.print(circle["fill"].string)
