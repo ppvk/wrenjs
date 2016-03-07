@@ -4,10 +4,6 @@ class JS {
     foreign static num_(string)
     foreign static bool_(string)
 
-    // JS.wrap() is a smaller way of calling
-    static wrap(string) {
-      return JsObject.new(string)
-    }
     static log(jsObject) {
         JS.run_("console.log(" + jsObject.native + ")")
     }
@@ -15,6 +11,24 @@ class JS {
 
 class JsObject {
   construct new(js) {
+    _id = JS.num_("WrenVM._register( new " + js + "() )")
+    _reference = "WrenVM._lookup(" + _id.toString + ")"
+  }
+
+  construct new(js, args) {
+    js = "new " + js + "("
+    js = js + args[0].toString
+    if (args.count > 1) {
+        for ( i in 1..(args.count-1) ) {
+          js = js + "," + args[i].toString
+        }
+    }
+    js = js + ")"
+    _id = JS.num_("WrenVM._register(" + js + ")")
+    _reference = "WrenVM._lookup(" + _id.toString + ")"
+  }
+
+  construct wrap(js) {
     _id = JS.num_("WrenVM._register(" + js + ")")
     _reference = "WrenVM._lookup(" + _id.toString + ")"
   }
@@ -27,11 +41,11 @@ class JsObject {
     return _reference
   }
 
-  property(string) {
-    return JS.wrap(native + "." + string)
+  [property] {
+    return JsObject.wrap(native + "." + property)
   }
 
-  setProperty(property, value) {
+  [property]= (value) {
     JS.run_(_reference + "." + property + " = " + value)
   }
 
@@ -46,7 +60,7 @@ class JsObject {
     js = js + ")"
 
     if (returnsObject) {
-      return JsObject.new(js)
+      return JsObject.wrap(js)
     } else {
       JS.run_(js)
     }
@@ -67,7 +81,7 @@ class JsObject {
     js = js + ")"
 
     if (returnsObject) {
-      return JsObject.new(js)
+      return JsObject.wrap(js)
     } else {
       JS.run_(js)
     }
@@ -75,6 +89,11 @@ class JsObject {
 
   callMethod(method, args) {
     callMethod(method, args, false)
+  }
+
+  callMethod(method) {
+    var js = _reference + "." + method + "()"
+    JS.run_(js)
   }
 
   string {

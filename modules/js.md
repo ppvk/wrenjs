@@ -18,10 +18,10 @@ Calls the JsObject like a function with `args`. Returns a JsObject if `returnsOb
 #### JsObject.callMethod( String method, List args, bool returnsObject )
 Calls `method` on the JsObject with `args`. Returns a JsObject if `returnsObject` is true. `returnsObject` is optional if `false`.
 
-#### JsObject.property( String property )
+#### JsObject[property]
 Returns a `JsObject` representing the property.
 
-#### JsObject.setProperty( String property, String value )
+#### JsObject[property] = value
 Sets the `property` in the JavaScript context to whatever `value` returns.
 
 #### JsObject.native
