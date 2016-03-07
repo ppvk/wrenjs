@@ -7,19 +7,16 @@ var params = {
   "height": 200
 }
 
-var two = JsObject.new("Two", [params.toString])
-two.callMethod("appendTo", [elem.native])
+var two = JsObject.new("Two", [params])
+two.callMethod("appendTo", [elem]).free()
 
-JS.log(two)
+var circle = two.callMethod("makeCircle", [72, 100, 50])
 
-var circle = two.callMethod("makeCircle", [72, 100, 50], true)
+System.print(circle["fill"].string)
+JS.log(circle["fill"])
 
-JS.log(circle)
+circle["fill"] = "#FF8000"
+circle["stroke"] = "orangered"
+circle["linewidth"] = 5
 
-circle["fill"] = "'#FF8000'"
-circle["stroke"] = "'orangered'"
-circle["linewidth"] = "5"
-
-JS.log( circle["linewidth"] )
-
-two.callMethod("update")
+two.callMethod("update").free()

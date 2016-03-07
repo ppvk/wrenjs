@@ -5,17 +5,20 @@
 ## JsObject
 JsObjects wrap actual JavaScript objects, allowing you to call them and their methods.
 
-#### JsObject.new( String js )
+#### JsObject.new( String js, List args)
+Evaluates the string as JavaScript, returning a wren JsObject that references the result.
+
+#### JsObject.wrap( String js )
 Evaluates the string as JavaScript, returning a wren JsObject that references the result.
 
 #### JsObject.free()
 Every JavaScript object wrapped by a JsObject is stored in a table to prevent it from being collected during GC. In order to prevent memory leaks, always call `free()` on your JsObjects when finished using them.
 
-#### JsObject.call( List args, bool returnsObject )
+#### JsObject.call( List args )
 
 Calls the JsObject like a function with `args`. Returns a JsObject if `returnsObject` is true. `returnsObject` is optional if `false`.
 
-#### JsObject.callMethod( String method, List args, bool returnsObject )
+#### JsObject.callMethod( String method, List args )
 Calls `method` on the JsObject with `args`. Returns a JsObject if `returnsObject` is true. `returnsObject` is optional if `false`.
 
 #### JsObject[property]

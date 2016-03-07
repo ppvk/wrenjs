@@ -7,9 +7,28 @@ class JS {
     static log(jsObject) {
         JS.run_("console.log(" + jsObject.native + ")")
     }
+
+    static makeSafe_(object) {
+      if (object is String) {
+        return "\"" + object + "\""
+      } else if (object is JsObject) {
+        return object.native
+      } else {
+        return object.toString
+      }
+    }
+
+    static isNull(object) {
+      return bool_(makeSafe_(object) + "=== null")
+    }
+    static isUndefined(object) {
+      return bool_("typeof(" + makeSafe_(object) ") === 'undefined'")
+    }
 }
 
 class JsObject {
+
+  // JsObject.new("Object") is equivalent to "new Object()" in JavaScript.
   construct new(js) {
     _id = JS.num_("WrenVM._register( new " + js + "() )")
     _reference = "WrenVM._lookup(" + _id.toString + ")"
@@ -17,10 +36,10 @@ class JsObject {
 
   construct new(js, args) {
     js = "new " + js + "("
-    js = js + args[0].toString
+    js = js + JS.makeSafe_(args[0])
     if (args.count > 1) {
         for ( i in 1..(args.count-1) ) {
-          js = js + "," + args[i].toString
+          js = js + "," + JS.makeSafe_(args[i])
         }
     }
     js = js + ")"
@@ -28,11 +47,18 @@ class JsObject {
     _reference = "WrenVM._lookup(" + _id.toString + ")"
   }
 
+  // wraps an already existing JavaScript object in a new JsObject.
   construct wrap(js) {
     _id = JS.num_("WrenVM._register(" + js + ")")
     _reference = "WrenVM._lookup(" + _id.toString + ")"
+
+    // We don't want to save references to null or undefined.
+    if (JS.isNull(this) || JS.isUndefined(this)) {
+      this.free();
+    }
   }
 
+  // Allows the JavaScript garbage collector to collect this object.
   free() {
     JS.run_("WrenVM._free(" + _id.toString + ")")
   }
@@ -45,55 +71,44 @@ class JsObject {
     return JsObject.wrap(native + "." + property)
   }
 
-  [property]= (value) {
-    JS.run_(_reference + "." + property + " = " + value)
+  [property] = (value) {
+    JS.run_(_reference + "." + property + " = " + JS.makeSafe_(value))
   }
 
-  call(args, returnsObject) {
-    var js = _reference + "("
-    js = js + args[0].toString
-    if (args.count > 1) {
-        for ( i in 1..(args.count-1) ) {
-          js = js + "," + args[i].toString
-        }
-    }
-    js = js + ")"
-
-    if (returnsObject) {
-      return JsObject.wrap(js)
-    } else {
-      JS.run_(js)
-    }
+  call() {
+    var js = _reference + "()"
+    return JsObject.wrap(js)
   }
 
   call(args) {
-    call(args, false)
-  }
-
-  callMethod(method, args, returnsObject) {
-    var js = _reference + "." + method + "("
-    js = js + args[0].toString
+    var js = _reference + "("
+    js = js + JS.makeSafe_(args[0])
     if (args.count > 1) {
         for ( i in 1..(args.count-1) ) {
-          js = js + "," + args[i].toString
+          js = js + "," + JS.makeSafe_(args[i])
         }
     }
     js = js + ")"
-
-    if (returnsObject) {
-      return JsObject.wrap(js)
-    } else {
-      JS.run_(js)
-    }
-  }
-
-  callMethod(method, args) {
-    callMethod(method, args, false)
+    System.print(js)
+    return JsObject.wrap(js)
   }
 
   callMethod(method) {
     var js = _reference + "." + method + "()"
-    JS.run_(js)
+    return JsObject.wrap(js)
+  }
+
+  callMethod(method, args) {
+    var js = _reference + "." + method + "("
+    js = js + JS.makeSafe_(args[0])
+    if (args.count > 1) {
+        for ( i in 1..(args.count-1) ) {
+          js = js + "," + JS.makeSafe_(args[i])
+        }
+    }
+    js = js + ")"
+
+    return JsObject.wrap(js)
   }
 
   string {
