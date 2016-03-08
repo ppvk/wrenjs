@@ -2,25 +2,21 @@ import "js" for JsObject, JS
 
 var elem = JsObject.wrap("document.getElementById('canvas')")
 
-var params = {
+var two = JsObject.new("Two", [{
   "width": 285,
   "height": 200
-}
+}]).callMethod("appendTo", [elem])
 
-JS.log(elem)
-
-var two = JsObject.new("Two", [params])
-
-JS.log(two)
-
-two.callMethod("appendTo", [elem])
-var circle = two.callMethod("makeCircle", [72, 100, 50])
-
-System.print(circle["fill"].string)
-JS.log(circle["fill"])
+var circle = two.callMethod("makeCircle", [-70, 0, 50])
+var rect = two.callMethod("makeRectangle", [70, 0, 100, 100])
 
 circle["fill"] = "#FF8000"
-circle["stroke"] = "orangered"
-circle["linewidth"] = 5
+rect["fill"] = "rgba(0, 200, 255, 0.75)"
 
-JS.log(two.callMethod("update"))
+var group = two.callMethod("makeGroup", [circle, rect])
+group.callMethod("noStroke")
+group["translation"].callMethod("set", [two["width"] / 2, two["height"] / 2])
+group["rotation"] = 3.14159265359
+group["scale"] = 0.75
+
+two.callMethod("update")
