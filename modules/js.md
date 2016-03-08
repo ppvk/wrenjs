@@ -52,10 +52,6 @@ JS is a class containing static methods for working with JavaScript.
 #### JS.log( JsObject jsObject )
 Runs `console.log` on the `JsObject`, providing more information than `System.print`.
 
-#### JS.wrap( String js )
-A shorter and more memorable form of `JsObject.new(string)`.
-Returns a `JsObject`
-
 ## Low-level JS methods
 
 

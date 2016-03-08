@@ -16,7 +16,6 @@ rect["fill"] = "rgba(0, 200, 255, 0.75)"
 var group = two.callMethod("makeGroup", [circle, rect])
 group.callMethod("noStroke")
 group["translation"].callMethod("set", [two["width"] / 2, two["height"] / 2])
-group["rotation"] = 3.14159265359
 group["scale"] = 0.75
 
 two.callMethod("update")

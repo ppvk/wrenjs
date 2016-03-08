@@ -4,8 +4,8 @@ class JS {
     foreign static num_(string)
     foreign static bool_(string)
 
-    static log(jsObject) {
-        JS.run_("console.log(" + jsObject.native + ")")
+    static log(js_object) {
+        JS.run_("console.log(" + js_object.native + ")")
     }
 
     // Takes in simple wren objects and converts them into a Js friendly string.
@@ -19,7 +19,7 @@ class JS {
       }
     }
 
-    // Converts JsObjects into one of wren's basic types.
+    // If possible, converts JsObjects into one of wren's basic types.
     static jsToWren_(object) {
       if (JS.isNull(object) || JS.isUndefined(object)) {
         object.free()
@@ -82,7 +82,7 @@ class JsObject {
     js = "new " + js + "("
     js = js + JS.wrenToJs_(args[0])
     if (args.count > 1) {
-        for ( i in 1..(args.count-1) ) {
+        for ( i in 1...(args.count) ) {
           js = js + "," + JS.wrenToJs_(args[i])
         }
     }
@@ -123,7 +123,7 @@ class JsObject {
     var js = _reference + "("
     js = js + JS.wrenToJs_(args[0])
     if (args.count > 1) {
-        for ( i in 1..(args.count-1) ) {
+        for ( i in 1...(args.count) ) {
           js = js + "," + JS.wrenToJs_(args[i])
         }
     }
@@ -140,7 +140,7 @@ class JsObject {
     var js = _reference + "." + method + "("
     js = js + JS.wrenToJs_(args[0])
     if (args.count > 1) {
-        for ( i in 1..(args.count-1) ) {
+        for ( i in 1...(args.count) ) {
           js = js + "," + JS.wrenToJs_(args[i])
         }
     }
