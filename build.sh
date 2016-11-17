@@ -26,4 +26,4 @@ emmake make static
 fn="['_shimNewVM','_wrenFreeVM','_wrenInterpret']"
 
 # Compile the custom libwren.a with the js interface
-$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.js -s NO_FILESYSTEM=1 -s NO_BROWSER=1 -s NO_EXIT_RUNTIME=1 -s EXPORTED_FUNCTIONS=$fn -Werror --memory-init-file 0 --pre-js ../src/js-glue/glue-pre.js --post-js ../src/shim.js --post-js ../src/js-glue/glue-post.js
+$EMSCRIPTEN/emcc -O3 ../wren/lib/libwren.a -o ../out/wren.js -s NO_FILESYSTEM=1 -s NO_EXIT_RUNTIME=1 -s EXPORTED_FUNCTIONS=$fn -Werror --memory-init-file 0 --pre-js ../src/js-glue/glue-pre.js --post-js ../src/shim.js --post-js ../src/js-glue/glue-post.js
