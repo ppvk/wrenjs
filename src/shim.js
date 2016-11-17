@@ -4,6 +4,7 @@ Wren = {
     CURRENT_INDEX: 1,
     VM_MAP: {},
 
+
     shimNewVM: Module.cwrap('shimNewVM', 'number'),
     shimFreeVM: Module.cwrap('wrenFreeVM', null, ['number']),
     interpret: Module.cwrap('wrenInterpret', 'number', ['number', 'string']),
@@ -21,6 +22,10 @@ Wren = {
 
     writeFn: function(c_vm, string) {
         Wren.VM_MAP[c_vm].writeFn(string);
+    },
+
+    errorFn: function(source_module, line, message) {
+        WrenVM.prototype.errorFn(source_module, line, message);
     },
 
     loadModuleFn: function(c_vm, string) {
@@ -47,6 +52,10 @@ WrenVM.prototype.freeVM = function() {
 
 WrenVM.prototype.writeFn = function(string) {
     console.log(string);
+};
+
+WrenVM.prototype.errorFn = function(source_module, line, message) {
+    throw(message + "\n  " + source_module + ":" + line);
 };
 
 WrenVM.prototype.interpret = function(wren) {

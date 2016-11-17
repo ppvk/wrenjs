@@ -12,12 +12,22 @@ static void shimWriteFn(WrenVM* vm, const char* toLog) {
     emscripten_run_script(buffer);
 }
 
+// Throws errors like JS errors.
+static void shimErrorFn(WrenErrorType type, const char* module, int line, const char* message) {
+    char buffer[1024];
+    snprintf(buffer, sizeof buffer, "Wren.errorFn(\"%s\", %d ,\"%s\")",module, line, message);
+    emscripten_run_script(buffer);
+}
+
 // Looks for Strings by key in the `WrenVM.module` object.
 char* shimloadModuleFn(WrenVM* vm, const char* module) {
     char buffer[1024];
     snprintf(buffer, sizeof buffer, "Wren.loadModuleFn(%p, \"%s\")", vm, module);
     return emscripten_run_script_string(buffer);
 }
+
+
+//// VARIABLE TYPE SHIMS ////
 
 // Runs the string in javascript with eval(), returns nothing
 void jsRun(WrenVM* vm) {
@@ -67,6 +77,7 @@ WrenVM* shimNewVM() {
     WrenConfiguration config;
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
+    config.errorFn = shimErrorFn;
     config.bindForeignMethodFn = shimForeignMethodFn;
     config.loadModuleFn = shimloadModuleFn;
     return wrenNewVM(&config);
