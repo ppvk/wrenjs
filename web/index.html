@@ -14,13 +14,7 @@
 
 <div id="canvas"></div>
 
-<script type="language/wren" module="main">
-// This is inline wren.
-// When we import 'js-test' we run all the 'please' tests on 'js'
-import "js-test"
-import "two"
-
-</script>
+<script type="language/wren" module="main" src="main.wren"></script>
 
 <script>
     // This block of code looks for "language/wren" script tags and loads them as
@@ -50,8 +44,8 @@ import "two"
     var testNum = 5.5;
     var testBool = true;
 
-    var config = new WrenConfiguration();
 
+    var config = new WrenConfiguration();
     config.errorFn = function(source_module, line, message) {
         throw(message + " | " + source_module + ":" + line);
     };
@@ -64,13 +58,89 @@ import "two"
         return MODULES[module];
     };
 
+    // BIND FOREIGNMETHOD DECLARATION //
+    var jsRun = function(vm, x) {
+      var string = Wren.getSlotString(vm, 1);
+      eval(string);
+    };
+
+    var jsRun_string = function(vm) {
+      var string = Wren.getSlotString(vm, 1);
+      Wren.setSlotString(vm, 0, eval(string).toString())
+    };
+
+    var jsRun_num = function(vm) {
+      var string = Wren.getSlotString(vm, 1);
+      Wren.setSlotDouble(vm, 0, eval(string))
+    };
+
+    var jsRun_bool = function(vm) {
+      var string = Wren.getSlotString(vm, 1);
+      var test = eval(string).toString();
+      if (test === 'true') {
+        Wren.setSlotBool(vm, 0, 1)
+      } else {
+        Wren.setSlotBool(vm, 0, 0)
+      }
+    };
+
+    var fnct = 0;
+
+    config.bindForeignMethodFn = function(
+      source_module,
+      className,
+      isStatic,
+      signature
+    ) {
+      fnct++;
+      if (className === "JS" && signature === "run_(_)") return jsRun;
+      if (className === "JS" && signature === "string_(_)") return jsRun_string;
+      if (className === "JS" && signature === "num_(_)") return jsRun_num;
+      if (className === "JS" && signature === "bool_(_)") return jsRun_bool;
+      return null;
+    }
+    // BIND FOREIGNMETHOD DECLARATION END //
+
+
+
+    // Used by js.wren to manage objects.
+    Wren.WREN_OBJECTS = {};
+    Wren.CURRENT_INDEX = 1;
+
+    WrenVM._lookup = function(id) {
+        return Wren.WREN_OBJECTS[id];
+    };
+
+    WrenVM._register = function(object) {   for (var index in Wren.WREN_OBJECTS) {
+        if (Wren.WREN_OBJECTS[index] === object)
+        return index;
+      }
+
+      Wren.WREN_OBJECTS[Wren.CURRENT_INDEX] = object;
+      Wren.CURRENT_INDEX++;
+      return Wren.CURRENT_INDEX - 1;
+    };
+
+    WrenVM._free = function(id) {
+        Wren.WREN_OBJECTS[id] = null;
+    };
+
+
     // Constructs a new WrenVM
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
+    var vm = new WrenVM(config);
     var vm = new WrenVM(config);
 
     // Looks for the main script on the page, and runs it as wren code.
     // By now, all the included modules should be loaded into the MODULES object
     // and ready for use.
-    vm.interpret(document.querySelector('[module="main"]').innerHTML.replace(/<[^>]*>/g, ""));
+    vm.interpret(MODULES.main);
 </script>
 </body>
 </html>
