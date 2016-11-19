@@ -2,33 +2,28 @@
 #include "wren.h"
 #include "emscripten.h"
 
-// Allows `System.print()` to log to the terminal.
-static void shimWriteFn(WrenVM* vm, const char* toLog) {
-    if (strcmp(toLog, "\n") == 0) {
-        return;
-    }
-    char buffer[1024];
-    snprintf(buffer, sizeof buffer, "Wren.writeFn(%p, \"%s\")", vm, toLog);
-    emscripten_run_script(buffer);
-}
+// Reusable WrenConfiguration object
+WrenConfiguration config;
 
-// Throws errors like JS errors.
-static void shimErrorFn(WrenErrorType type, const char* module, int line, const char* message) {
-    char buffer[1024];
-    snprintf(buffer, sizeof buffer, "Wren.errorFn(\"%s\", %d ,\"%s\")",module, line, message);
-    emscripten_run_script(buffer);
-}
-
-// Looks for Strings by key in the `WrenVM.module` object.
-char* shimloadModuleFn(WrenVM* vm, const char* module) {
-    char buffer[1024];
-    snprintf(buffer, sizeof buffer, "Wren.loadModuleFn(%p, \"%s\")", vm, module);
-    return emscripten_run_script_string(buffer);
+// Sets default settings for a new wren VM and returns a pointer for it.
+// Uses function pointers generated from the JavaScript context
+WrenVM* shimNewVM(
+  WrenWriteFn shimWriteFn,
+  WrenErrorFn shimErrorFn,
+  WrenLoadModuleFn shimLoadModuleFn,
+  WrenBindForeignMethodFn shimBindForeignMethodFn
+) {
+    wrenInitConfiguration(&config);
+    config.writeFn = shimWriteFn;
+    config.errorFn = shimErrorFn;
+    config.loadModuleFn = shimLoadModuleFn;
+    config.bindForeignMethodFn = shimBindForeignMethodFn;
+    return wrenNewVM(&config);
 }
 
 
 //// VARIABLE TYPE SHIMS ////
-
+/*
 // Runs the string in javascript with eval(), returns nothing
 void jsRun(WrenVM* vm) {
     const char* string = wrenGetSlotString(vm, 1);
@@ -71,14 +66,4 @@ WrenForeignMethodFn shimForeignMethodFn(
     if (strcmp(className, "JS") == 0 && strcmp(signature, "bool_(_)") == 0) return jsRun_bool;
     return NULL;
 }
-
-// Sets default settings for a new wren VM and returns a pointer for it.
-WrenVM* shimNewVM() {
-    WrenConfiguration config;
-    wrenInitConfiguration(&config);
-    config.writeFn = shimWriteFn;
-    config.errorFn = shimErrorFn;
-    config.bindForeignMethodFn = shimForeignMethodFn;
-    config.loadModuleFn = shimloadModuleFn;
-    return wrenNewVM(&config);
-}
+*/

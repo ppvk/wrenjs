@@ -17,10 +17,8 @@
 <script type="language/wren" module="main">
 // This is inline wren.
 // When we import 'js-test' we run all the 'please' tests on 'js'
-//import "js-test"
+import "js-test"
 import "two"
-
-System.print("yellow")x
 
 </script>
 
@@ -52,18 +50,22 @@ System.print("yellow")x
     var testNum = 5.5;
     var testBool = true;
 
-    // Constructs a new WrenVM
-    var vm = new WrenVM();
+    var config = new WrenConfiguration();
 
+    config.errorFn = function(source_module, line, message) {
+        throw(message + " | " + source_module + ":" + line);
+    };
     // Overrides the default 'writeFn', printing to the body instead of the console.
-    vm.writeFn = function(string) {
+    config.writeFn = function(string) {
       document.body.innerHTML += "<code>" + string + '<br> </code>';
     };
-
     // Overrides the 'loadModuleFn' so that the VM looks for modules in the MODULES object.
-    vm.loadModuleFn = function(module) {
+    config.loadModuleFn = function(module) {
         return MODULES[module];
     };
+
+    // Constructs a new WrenVM
+    var vm = new WrenVM(config);
 
     // Looks for the main script on the page, and runs it as wren code.
     // By now, all the included modules should be loaded into the MODULES object
