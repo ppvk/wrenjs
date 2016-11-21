@@ -13,10 +13,6 @@ var shimLoadModuleFn = function(vm, source_module) {
   return VM_MAP[vm].config.loadModuleFn(source_module);
 }
 
-var shimBindForeignMethodFn = function() {
-
-}
-
 Wren = {
     // The following functions are intended to be called from foreign methods or
     // finalizers. The interface Wren provides to a foreign method is like a
@@ -45,11 +41,13 @@ Wren = {
     //setSlotHandle: cwrap('wrenSetSlotHandle', null, ['number', 'number', 'number']), TODO WrenHandle
 };
 
+// WrenConfiguration JavaScript 'class'
 WrenConfiguration = function() {
   this.pointers = {};
   this.writeFn = console.log;
 };
 
+// this is a workaround to let us define foreign methods in JS space.
 Object.defineProperty(WrenConfiguration.prototype, 'bindForeignMethodFn', {
   set: function(fn) {
     var bindForeignMethodFn = function(
@@ -64,6 +62,8 @@ Object.defineProperty(WrenConfiguration.prototype, 'bindForeignMethodFn', {
       className = Pointer_stringify(className);
       signature = Pointer_stringify(signature);
 
+      // There is a limit to the number of these we can add.
+      // Each VM created uses at least one, and each bound method uses an additional one.
       return Runtime.addFunction(fn(source_module, className, isStatic, signature));
     };
     this.pointers.bindForeignMethodFn = bindForeignMethodFn;
@@ -96,5 +96,6 @@ WrenVM.prototype.interpret = function(wren) {
     'number', ['number', 'string'],
     [this._vm, wren]);
   // 0 is good
+  // TODO, replace with an ENUM
   return code;
 }
