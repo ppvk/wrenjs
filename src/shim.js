@@ -64,7 +64,7 @@ Object.defineProperty(WrenConfiguration.prototype, 'bindForeignMethodFn', {
       className = Pointer_stringify(className);
       signature = Pointer_stringify(signature);
 
-      return fn(source_module, className, isStatic, signature);
+      return Runtime.addFunction(fn(source_module, className, isStatic, signature));
     };
     this.pointers.bindForeignMethodFn = bindForeignMethodFn;
   }
