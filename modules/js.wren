@@ -1,11 +1,18 @@
 class JS {
-    foreign static run_(string)
-    foreign static string_(string)
-    foreign static num_(string)
-    foreign static bool_(string)
 
-    static log(js_object) {
-        JS.run_("console.log(" + js_object.native + ")")
+    foreign static call(toCall, returnType)
+
+    static run_(string) {
+      call(string, "void")
+    }
+    static string_(string) {
+      return call(string, "string")
+    }
+    static num_(string) {
+      return call(string, "number")
+    }
+    static bool_(string) {
+      return call(string, "boolean")
     }
 
     // Takes in simple wren objects and converts them into a Js friendly string.

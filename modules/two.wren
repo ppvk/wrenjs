@@ -1,4 +1,4 @@
-import "js" for JsObject, JS
+import "js" for JsObject
 
 var elem = JsObject.wrap("document.getElementById('canvas')")
 

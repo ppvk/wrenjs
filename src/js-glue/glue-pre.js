@@ -1,4 +1,3 @@
-var Wren;
 var WrenVM;
 var WrenConfiguration;
 (function() {

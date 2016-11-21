@@ -1,13 +1,3 @@
 shimNewVM
 wrenFreeVM
 wrenInterpret
-wrenGetSlotCount
-wrenEnsureSlots
-wrenGetSlotBool
-wrenGetSlotDouble
-wrenGetSlotString
-wrenSetSlotBool
-wrenSetSlotDouble
-wrenSetSlotNewList
-wrenSetSlotNull
-wrenSetSlotString
