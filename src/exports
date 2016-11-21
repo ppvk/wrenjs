@@ -11,3 +11,4 @@ wrenSetSlotDouble
 wrenSetSlotNewList
 wrenSetSlotNull
 wrenSetSlotString
+shimWriteFn

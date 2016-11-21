@@ -1,13 +1,20 @@
 
-//Function Pointer tracking
-Runtime.addFunction2 = function(x) {
-  fcount++;
-  return Runtime.addFunction(x);
+VM_MAP = {};
+
+var shimWriteFn = function(vm, message) {
+  VM_MAP[vm].config.writeFn(message);
 }
 
-Runtime.removeFunction2 = function(x) {
-  fcount--;
-  return Runtime.removeFunction(x);
+var shimErrorFn = function(source_module, line, message) {
+  console.warn(message + "\n  " + source_module + ":" + line);
+}
+
+var shimLoadModuleFn = function(vm, source_module) {
+  return VM_MAP[vm].config.loadModuleFn(source_module);
+}
+
+var shimBindForeignMethodFn = function() {
+
 }
 
 Wren = {
@@ -39,49 +46,9 @@ Wren = {
 };
 
 WrenConfiguration = function() {
-  this.pointers = {
-    errorFn: null,
-    writeFn: null,
-    loadModuleFn: null,
-    bindForeignMethodFn: null
-  };
+  this.pointers = {};
+  this.writeFn = console.log;
 };
-
-Object.defineProperty(WrenConfiguration.prototype, 'errorFn', {
-  set: function(fn) {
-    var errorFn = function(type, source_module, line, message) {
-      source_module = Pointer_stringify(source_module);
-      message = Pointer_stringify(message);
-      fn(source_module, line, message);
-    };
-    this.pointers.errorFn = errorFn;
-  }
-});
-
-Object.defineProperty(WrenConfiguration.prototype, 'writeFn', {
-  set: function(fn) {
-    var writeFn = function(vm, message) {
-      message = Pointer_stringify(message);
-      fn(message);
-    };
-    this.pointers.writeFn = writeFn;
-  }
-});
-
-Object.defineProperty(WrenConfiguration.prototype, 'loadModuleFn', {
-  set: function(fn) {
-    var loadModuleFn = function(vm, module_name) {
-      module_name = Pointer_stringify(module_name);
-      // the wrenVM will deallocate this for us later.
-      return allocate(
-        intArrayFromString(fn(module_name)),
-        'i8',
-        ALLOC_NORMAL
-      )
-    };
-    this.pointers.loadModuleFn = loadModuleFn;
-  }
-});
 
 Object.defineProperty(WrenConfiguration.prototype, 'bindForeignMethodFn', {
   set: function(fn) {
@@ -97,27 +64,22 @@ Object.defineProperty(WrenConfiguration.prototype, 'bindForeignMethodFn', {
       className = Pointer_stringify(className);
       signature = Pointer_stringify(signature);
 
-      return Runtime.addFunction2(fn(source_module, className, isStatic, signature));
+      return fn(source_module, className, isStatic, signature);
     };
     this.pointers.bindForeignMethodFn = bindForeignMethodFn;
   }
 });
 
 // WrenVM JavaScript 'class'
-// Uses up 4 of our Function Pointers
 WrenVM = function(config) {
+  this.config = config;
   this._vm = ccall('shimNewVM',
     'number',
-    ['number', 'number', 'number', 'number'],
-    [
-      // TODO, deallocate these function pointers when VM is freed
-      Runtime.addFunction2(config.pointers.writeFn),
-      Runtime.addFunction2(config.pointers.errorFn),
-      Runtime.addFunction2(config.pointers.loadModuleFn),
-      Runtime.addFunction2(config.pointers.bindForeignMethodFn)
+    ['number'],[
+      Runtime.addFunction(this.config.pointers.bindForeignMethodFn)
     ]
   );
-  console.log(fcount);
+  VM_MAP[this._vm] = this;
 };
 
 WrenVM.prototype.freeVM = function() {
@@ -125,6 +87,8 @@ WrenVM.prototype.freeVM = function() {
     null, ['number'],
     [this._vm]
   );
+  VM_MAP[this._vm] = undefined;
+  this._vm = undefined;
 };
 
 WrenVM.prototype.interpret = function(wren) {
