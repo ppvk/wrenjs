@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Setup the PATH
-source emsdk/emsdk_portable/emsdk_env.sh
+source emsdk/emsdk-portable/emsdk_env.sh
 
 # clone wren
 git clone https://github.com/munificent/wren.git
