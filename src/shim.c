@@ -13,7 +13,7 @@ static void shimWriteFn(WrenVM* vm, const char* toLog) {
     snprintf(buffer, sizeof buffer, "shimWriteFn(%p, \"%s\")", vm, toLog);
     emscripten_run_script(buffer);
 }
-static void shimErrorFn(WrenErrorType type, const char* module, int line, const char* message) {
+static void shimErrorFn(WrenVM* vm, WrenErrorType type, const char* module, int line, const char* message) {
     char buffer[1024];
     snprintf(buffer, sizeof buffer, "shimErrorFn(\"%s\", %d ,\"%s\")",module, line, message);
     emscripten_run_script(buffer);

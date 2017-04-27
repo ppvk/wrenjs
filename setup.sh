@@ -6,7 +6,9 @@ wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.t
 # Untar the downloaded file
 tar xvzf emsdk/emsdk-portable.tar.gz -C ./emsdk
 
+ls
+
 # Update emscripten
-./emsdk/emsdk_portable/emsdk update
-./emsdk/emsdk_portable/emsdk install latest
-./emsdk/emsdk_portable/emsdk activate latest
+./emsdk/emsdk-portable/emsdk update
+./emsdk/emsdk-portable/emsdk install latest
+./emsdk/emsdk-portable/emsdk activate latest
