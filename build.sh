@@ -4,7 +4,7 @@
 source emsdk/emsdk-portable/emsdk_env.sh
 
 # clone wren
-git clone https://github.com/munificent/wren.git
+git clone https://github.com/wren-lang/wren.git
 
 # Create a place for our outgoing wren.js file
 mkdir -p out
