@@ -1,3 +1,2 @@
 #!/bin/bash
-
 node test/test.js

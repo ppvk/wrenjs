@@ -1,4 +1,3 @@
-
 // Keeps track of each WrenVM created, indexed by pointer.
 // The following 'shim' functions look up the WrenVM using the c pointer
 // and calls the corresponding function in its config.
