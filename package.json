@@ -1,0 +1,27 @@
+{
+  "name": "wrenjs",
+  "version": "0.0.0",
+  "description": "Use the wren programming language in your browser!",
+  "main": "n/a",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ppvk/wrenjs.git"
+  },
+  "author": "Paul VanKeuren and friends",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ppvk/wrenjs/issues"
+  },
+  "homepage": "https://github.com/ppvk/wrenjs#readme",
+  "devDependencies": {
+    "webpack": "^5.10.0",
+    "webpack-cli": "^4.2.0"
+  }
+}

@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+    <head>
+        <title></title>
+        <meta charset="utf-8">
+        <style>
+            html {
+                color: #fff;
+                background-color: #000;
+                font-family: monospace;
+            }
+        </style>
+    </head>
+    <body>
+
+        <code id="main" hidden>
+
+            System.print("Hello from main!")
+
+            import "module" for Message, Console
+
+            System.print("exists:" + Message.exists)
+
+            Message.send("Hello!")
+
+            Message.send_too("Hello!")
+
+            Message.send("Hello!")
+
+            Console.log("xoxo")
+
+        </code>
+
+        <code id="mod:module" hidden>
+
+            System.print("Hello from module!")
+
+            class Message {
+                foreign static send(text)
+                foreign static send_too(text)
+
+                static exists { "true" }
+            }
+
+            foreign class Console {
+                foreign static log(msg)
+            }
+
+        </code>
+
+        <script src="../../out/wren.js"></script>
+        <script>
+            function writeFn(text) {
+                let div = document.createElement('div');
+                div.innerText = text;
+                document.body.append(div);
+            }
+
+            function resolveModuleFn(importer, name) {
+                return 'mod:' + name;
+            }
+
+            function loadModuleFn(module) {
+                return document.getElementById(module).innerText;
+            }
+
+            function alert(vm) {
+                vm = Wren.VM[vm];
+                let message = vm.getSlotString(1);
+                console.log('alert:' + message);
+            }
+
+            function alert_too(vm) {
+                vm = Wren.VM[vm];
+                let message = vm.getSlotString(1);
+                console.log('alert_too:' + message);
+            }
+
+
+
+
+            function bindForeignMethodFn(module, className, isStatic, signature) {
+                console.warn(module + ':' + className + '.' + signature +
+                    ' | static:' + isStatic);
+                if(signature == 'send(_)') {
+                    return alert;
+                }
+                if(signature == 'send_too(_)') {
+                    return alert_too;
+                }
+                if(signature == 'log(_)') {
+                    return function(vm) {
+                        vm = Wren.VM[vm];
+                        let msg = vm.getSlotString(1);
+                        console.log(msg);
+                    };
+                }
+            }
+
+
+            function allocate() {
+                console.log('Created a System.')
+            }
+
+            function finalize() {
+                console.log('Closed a System.')
+            }
+
+            let methods = {
+                allocate: allocate,
+                finalize: finalize
+            }
+
+            function bindForeignClassFn(vm, module, className, isStatic, signature) {
+                if(className == 'Console') {
+                    return methods;
+                }
+            }
+
+            let vm = new Wren.VM({
+                writeFn: writeFn,
+                resolveModuleFn: resolveModuleFn,
+                loadModuleFn: loadModuleFn,
+                bindForeignMethodFn: bindForeignMethodFn,
+                bindForeignClassFn: bindForeignClassFn
+            });
+
+            vm.interpret('main', document.getElementById("main").innerText);
+
+        </script>
+    </body>
+</html>

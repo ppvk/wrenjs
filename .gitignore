@@ -1,5 +1,5 @@
 wren
 emsdk
-out
 .idea
 *~
+node_modules
