@@ -43,21 +43,18 @@ fn="$fn]"
 emcc \
     wren/lib/libwren.a src/shim.c \
     -I wren/src/include \
-    -o out/wren.js \
-    -O0 \
+    -o src/generated/libwren.js \
+    -O3 \
     -s ASSERTIONS=1 \
     -s ENVIRONMENT='web' -s JS_MATH=1 \
-    -s MODULARIZE=0 -s EXPORT_ES6=0 -s FILESYSTEM=0 \
-    -s EXPORT_ALL=0 -s LINKABLE=0 \
+    -s MODULARIZE=1 -s EXPORT_ES6=1 -s FILESYSTEM=0 \
     -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 \
-    -s INCOMING_MODULE_JS_API=[] -s EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","addFunction","UTF8ToString"] \
+    -s INCOMING_MODULE_JS_API=[] -s EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
     -s EXPORTED_FUNCTIONS=$fn \
-    --pre-js src/glue/pre.js \
-    --post-js src/shim.js \
-    --post-js src/glue/post.js \
     -Werror --memory-init-file 0 \
 
-#npx webpack --config scripts/webpack.js;
+
+npx webpack --config scripts/webpack.js;
 
 # clean up
 rm -r src/generated

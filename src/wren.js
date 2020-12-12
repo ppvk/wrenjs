@@ -1,3 +1,11 @@
+import Module from './generated/libwren.js';
+
+let C;
+Module().then( function(context) {
+    C = context;
+})
+
+
 // Define a series of default functions for the default Wren configuration
 
 // default function for a resolveModuleFn is to just return the name given.
@@ -13,7 +21,7 @@ function defaultBindForeignMethodFn(module, className, isStatic, signature) {
     return null;
 }
 
-function defaultBindForeignClassFn(module, className) {
+function defaultBindForeignClassFn(vm, module, className) {
     return null;
 }
 
@@ -41,18 +49,19 @@ function defaultErrorFn(errorType, module, line, msg) {
     }
 }
 
-class VM {
+export class VM {
     constructor(config) {
         let default_config = {
             resolveModuleFn     : defaultResolveModuleFn,
             loadModuleFn        : defaultLoadModuleFn,
             bindForeignMethodFn : defaultBindForeignMethodFn,
+            bindForeignClassFn  : defaultBindForeignClassFn,
             writeFn             : defaultWriteFn,
             errorFn             : defaultErrorFn
         }
         this.config = Object.assign(default_config, config);
 
-        this._pointer = Module.ccall('shimNewVM',
+        this._pointer = C.ccall('shimNewVM',
           'number',
           [],[]
         );
@@ -65,7 +74,31 @@ class VM {
     }
 
     bindForeignMethod(module, className, isStatic, signature) {
-        return this.config.bindForeignMethodFn(module, className, isStatic, signature);
+        let method = this.config.bindForeignMethodFn(module, className, isStatic, signature);
+
+        // This is the function we pass back to C.
+        // C will pass this a pointer for the wren VM, and we need to get the
+        // JS version to the JS function.
+        let vm = this;
+        return function(_) {
+            method(vm);
+        }
+    }
+
+    bindForeignClass(module, className) {
+        var methods =  this.config.bindForeignClassFn(this, module, className);
+
+        // Similar to the bindForeignMethod fn above, C expects to pass these
+        // a pointer to the VM, and we need to convert that to a JS Wren.VM
+        let vm = this;
+        return {
+            allocate: function(_) {
+                methods.allocate(vm);
+            },
+            finalize: function(_) {
+                methods.finalize(vm);
+            }
+        }
     }
 
     write(text) {
@@ -77,7 +110,7 @@ class VM {
     }
 
     free() {
-        Module.ccall('wrenFreeVM',
+        C.ccall('wrenFreeVM',
           null,
           ['number'],
           [this._pointer]
@@ -87,7 +120,7 @@ class VM {
     }
 
     collectGarbage() {
-        Module.ccall('wrenCollectGarbage',
+        C.ccall('wrenCollectGarbage',
           null,
           ['number'],
           [this._pointer]
@@ -95,15 +128,16 @@ class VM {
     }
 
     interpret(module, src) {
-        let result = Module.ccall('wrenInterpret',
-          'number',
-          ['number', 'string', 'string'],
-          [this._pointer, module, src]);
+        let result = C.ccall('wrenInterpret',
+            'number',
+            ['number', 'string', 'string'],
+            [this._pointer, module, src]);
+
         return result;
     }
 
     makeCallHandle(signature) {
-        let handle = Module.ccall('wrenMakeCallHandle',
+        let handle = C.ccall('wrenMakeCallHandle',
           'number',
           ['number', 'string'],
           [this._pointer, signature]
@@ -112,7 +146,7 @@ class VM {
     }
 
     call(method) {
-        let result = Module.ccall('wrenCall',
+        let result = C.ccall('wrenCall',
           'number',
           ['number', 'number'],
           [this._pointer, method]
@@ -121,7 +155,7 @@ class VM {
     }
 
     releaseHandle(handle) {
-        Module.ccall('wrenReleaseHandle',
+        C.ccall('wrenReleaseHandle',
           null,
           ['number', 'number'],
           [this._pointer, 'handle']
@@ -129,7 +163,7 @@ class VM {
     }
 
     getSlotCount() {
-        let count = Module.ccall('wrenGetSlotCount',
+        let count = C.ccall('wrenGetSlotCount',
           'number',
           ['number'],
           [this._pointer]
@@ -138,7 +172,7 @@ class VM {
     }
 
     ensureSlots(numSlots) {
-        Module.ccall('wrenEnsureSlots',
+        C.ccall('wrenEnsureSlots',
           null,
           ['number', 'number'],
           [this._pointer, numSlots]
@@ -146,7 +180,7 @@ class VM {
     }
 
     getSlotType(slot) {
-        let type = Module.ccall('wrenGetSlotType',
+        let type = C.ccall('wrenGetSlotType',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
@@ -155,7 +189,7 @@ class VM {
     }
 
     getSlotBool(slot) {
-        let boolean = Module.ccall('wrenGetSlotBool',
+        let boolean = C.ccall('wrenGetSlotBool',
           'boolean',
           ['number', 'number'],
           [this._pointer, slot]
@@ -164,7 +198,7 @@ class VM {
     }
 
     getSlotBytes(slot, length) {
-        let bytes = Module.ccall('wrenGetSlotBytes',
+        let bytes = C.ccall('wrenGetSlotBytes',
           'string',
           ['number', 'number', 'number'],
           [this._pointer, slot, length]
@@ -173,7 +207,7 @@ class VM {
     }
 
     getSlotDouble(slot) {
-        let double = Module.ccall('wrenGetSlotDouble',
+        let double = C.ccall('wrenGetSlotDouble',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
@@ -182,7 +216,7 @@ class VM {
     }
 
     wrenGetSlotForeign(slot) {
-        let pointer = Module.ccall('wrenGetSlotForeign',
+        let pointer = C.ccall('wrenGetSlotForeign',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
@@ -191,7 +225,7 @@ class VM {
     }
 
     getSlotString(slot) {
-        let string = Module.ccall('wrenGetSlotString',
+        let string = C.ccall('wrenGetSlotString',
           'string',
           ['number', 'number'],
           [this._pointer, slot]
@@ -200,7 +234,7 @@ class VM {
     }
 
     getSlotHandle(slot) {
-        let handle = Module.ccall('wrenGetSlotHandle',
+        let handle = C.ccall('wrenGetSlotHandle',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
@@ -209,7 +243,7 @@ class VM {
     }
 
     setSlotBool(slot, value) {
-        Module.ccall('wrenSetSlotBool',
+        C.ccall('wrenSetSlotBool',
           null,
           ['number', 'number', 'boolean'],
           [this._pointer, slot, value]
@@ -217,7 +251,7 @@ class VM {
     }
 
     setSlotBytes(slot, bytes, length) {
-        Module.ccall('wrenSetSlotBytes',
+        C.ccall('wrenSetSlotBytes',
           null,
           ['number', 'number', 'string', 'number'],
           [this._pointer, slot, bytes, length]
@@ -225,7 +259,7 @@ class VM {
     }
 
     setSlotDouble(slot, value) {
-        Module.ccall('wrenSetSlotDouble',
+        C.ccall('wrenSetSlotDouble',
           null,
           ['number', 'number', 'number'],
           [this._pointer, slot, value]
@@ -233,7 +267,7 @@ class VM {
     }
 
     setSlotNewForeign(slot, classSlot, size) {
-        let pointer = Module.ccall('wrenSetSlotNewForeign',
+        let pointer = C.ccall('wrenSetSlotNewForeign',
           'number',
           ['number', 'number', 'number', 'number'],
           [this._pointer, slot, classSlot, size]
@@ -242,7 +276,7 @@ class VM {
     }
 
     setSlotNewList(slot) {
-        Module.ccall('wrenSetSlotNewList',
+        C.ccall('wrenSetSlotNewList',
           null,
           ['number', 'number'],
           [this._pointer, slot]
@@ -250,7 +284,7 @@ class VM {
     }
 
     setSlotNull(slot) {
-        Module.ccall('wrenSetSlotNull',
+        C.ccall('wrenSetSlotNull',
           null,
           ['number', 'number'],
           [this._pointer, slot]
@@ -258,7 +292,7 @@ class VM {
     }
 
     setSlotString(slot, text) {
-        Module.ccall('wrenSetSlotString',
+        C.ccall('wrenSetSlotString',
           null,
           ['number', 'number', 'string'],
           [this._pointer, slot, text]
@@ -266,7 +300,7 @@ class VM {
     }
 
     setSlotHandle(slot, handle) {
-        Module.ccall('wrenSetSlotHandle',
+        C.ccall('wrenSetSlotHandle',
           null,
           ['number', 'number', 'number'],
           [this._pointer, slot, handle]
@@ -274,7 +308,7 @@ class VM {
     }
 
     getListCount(slot) {
-        let count = Module.ccall('wrenGetListCount',
+        let count = C.ccall('wrenGetListCount',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
@@ -283,7 +317,7 @@ class VM {
     }
 
     getListElement(listSlot, index, elementSlot) {
-        Module.ccall('wrenGetListElement',
+        C.ccall('wrenGetListElement',
           null,
           ['number', 'number', 'number', 'number'],
           [this._pointer, listSlot, index, elementSlot]
@@ -291,7 +325,7 @@ class VM {
     }
 
     insertInList(listSlot, index, elementSlot) {
-        Module.ccall('wrenInsertInList',
+        C.ccall('wrenInsertInList',
           null,
           ['number', 'number', 'number', 'number'],
           [this._pointer, listSlot, index, elementSlot]
@@ -299,7 +333,7 @@ class VM {
     }
 
     getVariable(module, name, slot) {
-        let variable = Module.ccall('wrenGetVariable',
+        let variable = C.ccall('wrenGetVariable',
           null,
           ['number', 'string', 'string', 'number'],
           [this._pointer, module, name, slot]
@@ -307,28 +341,10 @@ class VM {
     }
 
     abortFiber(slot) {
-        Module.ccall('wrenAbortFiber',
+        C.ccall('wrenAbortFiber',
           null,
           ['number', 'number'],
           [this._pointer, slot]
         );
     }
-
-    getUserData() {
-        let data = Module.ccall('wrenGetUserData',
-          null,
-          ['number'],
-          [this._pointer]
-        );
-        return data
-    }
-
-    setUserData(userData) {
-        Module.ccall('wrenSetUserData',
-          null,
-          ['number', 'number'],
-          [this._pointer, userData]
-        );
-    }
 }
-Wren.VM = VM;

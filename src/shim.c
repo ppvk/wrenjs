@@ -64,11 +64,11 @@ const char* shimResolveModuleFn(WrenVM* vm,
     wrenSetSlotString(vm, 1, name);
 
     EM_ASM({
-        let importer = VM[$0].getSlotString(0);
-        let name = VM[$0].getSlotString(1);
+        let importer = Wren.VM[$0].getSlotString(0);
+        let name = Wren.VM[$0].getSlotString(1);
 
-        let output = VM[$0].config.resolveModuleFn(importer, name);
-        VM[$0].setSlotString(2, output);
+        let output = Wren.VM[$0].config.resolveModuleFn(importer, name);
+        Wren.VM[$0].setSlotString(2, output);
     }, vm);
 
     const char* output = wrenGetSlotString(vm, 2);
@@ -80,19 +80,19 @@ char* shimLoadModuleFn(WrenVM* vm, const char* name) {
     wrenSetSlotString(vm, 0, name);
 
     EM_ASM({
-        let name = VM[$0].getSlotString(0);
-        let module = VM[$0].loadModule(name);
+        let name = Wren.VM[$0].getSlotString(0);
+        let module = Wren.VM[$0].loadModule(name);
 
         if (module == null) {
             // Could not find module
             // This does throw a runtime error, as expected
             // however it seems to complain about missing implementations rather
             // than missing modules. TODO, need to look into this more.
-            VM[$0].setSlotBool(2, false);
+            Wren.VM[$0].setSlotBool(2, false);
         } else {
             // Could find module
-            VM[$0].setSlotBool(2, true);
-            VM[$0].setSlotString(1, module);
+            Wren.VM[$0].setSlotBool(2, true);
+            Wren.VM[$0].setSlotString(1, module);
         }
 
     }, vm);
@@ -108,12 +108,12 @@ char* shimLoadModuleFn(WrenVM* vm, const char* name) {
 
 // This pointer and the function right below it are meant to be reusable.
 // Everytime we set a ForeignMethodFn, we use this pointer as a way to send that
-// Function pointer to C, and attach
-WrenForeignMethodFn* shimForeignMethod;
+// Function pointer to C
+WrenForeignMethodFn shimForeignMethod;
 
 EMSCRIPTEN_KEEPALIVE
 void setCurrentForeignMethod(WrenForeignMethodFn foreignMethod) {
-    shimForeignMethod = &foreignMethod;
+    shimForeignMethod = foreignMethod;
 }
 
 // This is easily the most complicated part of these shim files.
@@ -123,7 +123,7 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
     const char* signature) {
 
     // Pepare to send the arguments to JavaScript
-    wrenEnsureSlots(vm, 5);
+    wrenEnsureSlots(vm, 4);
     wrenSetSlotString(vm, 0, module);
     wrenSetSlotString(vm, 1, className);
     wrenSetSlotBool(vm, 2, isStatic);
@@ -131,12 +131,12 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
 
     EM_ASM({
         // Get those arguments
-        let module = VM[$0].getSlotString(0);
-        let className = VM[$0].getSlotString(1);
-        let isStatic = VM[$0].getSlotBool(2);
-        let signature = VM[$0].getSlotString(3);
+        let module = Wren.VM[$0].getSlotString(0);
+        let className = Wren.VM[$0].getSlotString(1);
+        let isStatic = Wren.VM[$0].getSlotBool(2);
+        let signature = Wren.VM[$0].getSlotString(3);
 
-        let foreignMethodFn = VM[$0].bindForeignMethod(
+        let foreignMethodFn = Wren.VM[$0].bindForeignMethod(
             module, className, isStatic, signature
         );
 
@@ -144,14 +144,15 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
         // JavaScript function to bind.
         if (foreignMethodFn == null) {
             // We did not find a method
-            VM[$0].setSlotBool(0, false);
+            Wren.VM[$0].setSlotBool(0, false);
         } else {
             // We did find a method
-            VM[$0].setSlotBool(0, true);
+            Wren.VM[$0].setSlotBool(0, true);
 
             let fnPointer = addFunction(foreignMethodFn, 'vi');
             // this sets our reusable pointer to the JavaScript function we just
             // wrapped.
+
             ccall('setCurrentForeignMethod',
               null,
               ['number'],
@@ -165,10 +166,8 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
         return NULL;
     }
 
-    return *shimForeignMethod;
+    return shimForeignMethod;
 }
-
-
 
 
 WrenForeignMethodFn shimAllocate;
@@ -183,24 +182,22 @@ void setClassMethods(WrenForeignMethodFn allocate, WrenFinalizerFn finalize) {
 WrenForeignClassMethods shimBindForeignClassFn(
     WrenVM* vm, const char* module, const char* className) {
 
-    WrenForeignClassMethods methods;
-
     wrenEnsureSlots(vm, 2);
     wrenSetSlotString(vm, 0, module);
     wrenSetSlotString(vm, 1, className);
 
     EM_ASM({
-        let module = VM[$0].getSlotString(0);
-        let className = VM[$0].getSlotString(1);
+        let module = Wren.VM[$0].getSlotString(0);
+        let className = Wren.VM[$0].getSlotString(1);
 
-        let classMethods = VM[$0].bindForeignClass(module, className);
+        let classMethods = Wren.VM[$0].bindForeignClass(module, className);
 
         if (classMethods == null) {
             // We did not find this class
-            VM[$0].setSlotBool(0, false);
+            Wren.VM[$0].setSlotBool(0, false);
         } else {
             // We did find this class
-            VM[$0].setSlotBool(0, true);
+            Wren.VM[$0].setSlotBool(0, true);
 
             // Convert the JS functions to pointers
             let allocatePtr = addFunction(classMethods.allocate, 'vi');
@@ -215,6 +212,8 @@ WrenForeignClassMethods shimBindForeignClassFn(
         }
 
     }, vm);
+
+    WrenForeignClassMethods methods;
 
     if (wrenGetSlotBool(vm, 0) == false) {
         return methods;
@@ -236,8 +235,8 @@ void shimWriteFn(WrenVM* vm, const char* text) {
     wrenSetSlotString(vm, 0, text);
 
     EM_ASM({
-        let text = VM[$0].getSlotString(0);
-        VM[$0].write(text);
+        let text = Wren.VM[$0].getSlotString(0);
+        Wren.VM[$0].write(text);
     }, vm);
 }
 
@@ -252,12 +251,12 @@ void shimErrorFn(
     wrenSetSlotString(vm, 3, message);
 
     EM_ASM({
-        let type = VM[$0].getSlotDouble(0);
-        let module = VM[$0].getSlotString(1);
-        let line = VM[$0].getSlotDouble(2);
-        let message = VM[$0].getSlotString(3);
+        let type = Wren.VM[$0].getSlotDouble(0);
+        let module = Wren.VM[$0].getSlotString(1);
+        let line = Wren.VM[$0].getSlotDouble(2);
+        let message = Wren.VM[$0].getSlotString(3);
 
-        VM[$0].error(type, module, line, message);
+        Wren.VM[$0].error(type, module, line, message);
     }, vm);
 }
 
@@ -269,10 +268,10 @@ WrenVM* shimNewVM() {
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.errorFn = shimErrorFn;
-    config.loadModuleFn = shimLoadModuleFn;
     config.bindForeignMethodFn = shimBindForeignMethodFn;
-    config.resolveModuleFn = shimResolveModuleFn;
     config.bindForeignClassFn = shimBindForeignClassFn;
+    config.loadModuleFn = shimLoadModuleFn;
+    config.resolveModuleFn = shimResolveModuleFn;
 
     WrenVM* vm = wrenNewVM(&config);
     return vm;

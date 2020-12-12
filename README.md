@@ -1,8 +1,26 @@
 # wrenjs
 Using [emscripten](http://kripken.github.io/emscripten-site/)
-to transpile Bob Nystrom's [wren](http://munificent.github.io/wren/) language to Javascript.
+to transpile Bob Nystrom's [wren](http:wren.io) language to Javascript.
 
-[JS module API Documentation](modules/js.md)
+wren: 0.3.0 | emscripten: 2.0.10
+
+# Quick Start
+
+There should be a prebuilt copy of the library in the `out` directory, that
+you can just add to your html document.
+
+
+After that, you'll be able to access and use the `Wren` object to create a VM.
+
+    // Give this a shot, and take a peek in the console.
+    let vm = new Wren.VM();
+    vm.interpret('main', 'System.print(123456)')
+
+For the most part, all the wren C api functions are implemented as methods on
+the Wren.VM.
+
+For Example:
+`wrenSetSlotString(vm, slot, string)` becomes `vm.setSlotString(slot, string)`
 
 # Build Instructions
 
@@ -12,18 +30,10 @@ You will need:
 - build-essential
 - cmake
 - python2.7
-- nodejs/iojs
+- nodejs
 - java
 
-After these are installed, run
+After these are installed, run `./build.sh`
 
-    ./build.sh
-
-That command will download the master branch of wren,
-get the portable emscripten setup and install it in the 'emsdk' directory.
-As your system will have to build emscripten from scratch,
-this process takes quite a while.
-
-This puts the emscripten tools on your PATH temporarily,
-moves the wrenjs specific c files into wren's src folder,
-and compiles the wren VM to Javascript.
+For a detailed explanation of what this bash script does,
+feel free to check out the comments in the file itself.
