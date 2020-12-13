@@ -87,7 +87,7 @@ bound to that method.
 If the foreign function could not be found, this should return null and
 Wren will report it as runtime error.
 
-    function bindForeignMethodFn(module, className, isStatic, signature) {
+    function bindForeignMethodFn(vm, module, className, isStatic, signature) {
         // determine correct function to return
         return methodFunction;
     }

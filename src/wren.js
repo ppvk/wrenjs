@@ -26,6 +26,8 @@ export class VM {
         );
 
         VM[this._pointer] = this;
+
+        this._foreignClasses = {};
     }
 
     loadModule(name) {
@@ -33,7 +35,7 @@ export class VM {
     }
 
     bindForeignMethod(module, className, isStatic, signature) {
-        let method = this.config.bindForeignMethodFn(module, className, isStatic, signature);
+        let method = this.config.bindForeignMethodFn(this, module, className, isStatic, signature);
 
         // This is the function we pass back to C.
         // C will pass this a pointer for the wren VM, and we need to get the
@@ -56,6 +58,14 @@ export class VM {
             },
             finalize: function(_) {
                 methods.finalize(vm);
+
+                let pointer = C.ccall('wrenGetSlotForeign',
+                  'number',
+                  ['number', 'number'],
+                  [this._pointer, 0]
+                );
+
+                delete this._foreignClasses[pointer];
             }
         }
     }
@@ -174,13 +184,14 @@ export class VM {
         return double;
     }
 
-    wrenGetSlotForeign(slot) {
+    getSlotForeign(slot) {
         let pointer = C.ccall('wrenGetSlotForeign',
           'number',
           ['number', 'number'],
           [this._pointer, slot]
         );
-        return pointer;
+
+        return this._foreignClasses[pointer];
     }
 
     getSlotString(slot) {
@@ -225,13 +236,16 @@ export class VM {
         );
     }
 
-    setSlotNewForeign(slot, classSlot, size) {
+    setSlotNewForeign(slot, classSlot, foreignObject) {
         let pointer = C.ccall('wrenSetSlotNewForeign',
           'number',
           ['number', 'number', 'number', 'number'],
-          [this._pointer, slot, classSlot, size]
+          [this._pointer, slot, classSlot, 0]
         );
-        return pointer;
+
+        this._foreignClasses[pointer] = foreignObject;
+
+        return foreignObject;
     }
 
     setSlotNewList(slot) {

@@ -1,7 +1,5 @@
 
 export class Configuration {
-    
-
 
     // Defaults //
 
@@ -13,7 +11,7 @@ export class Configuration {
         return null;
     }
 
-    static defaultBindForeignMethodFn(module, className, isStatic, signature) {
+    static defaultBindForeignMethodFn(vm, module, className, isStatic, signature) {
         return null;
     }
 

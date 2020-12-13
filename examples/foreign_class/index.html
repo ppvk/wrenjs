@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+    <head>
+        <title></title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        Check the console.
+        <pre id="main">
+
+    foreign class Goblin {
+        construct new(name) {}
+
+        foreign eat(food)
+    }
+
+    var g = Goblin.new("Boblin")
+    g.eat("kibble")
+
+        </pre>
+        <script src="../../out/wren.min.js"></script>
+        <script>
+
+            class Goblin {
+                constructor(name) {
+                    this.name = name;
+                    console.log('Hello, I\'m ' + this.name + '. I was just born!');
+                }
+
+                eat(food) {
+                    console.log(this.name + ' ate some ' + food + '.');
+                }
+            }
+
+            let vm = new Wren.VM({
+
+                bindForeignClassFn: function(vm, module, className) {
+                    function a(vm) {
+                        let name = vm.getSlotString(1);
+                        let jsGoblin = new Goblin(name);
+                        vm.setSlotNewForeign(0, 0, jsGoblin);
+                    }
+
+                    return {
+                        allocate: a
+                    }
+                },
+
+                bindForeignMethodFn: function(vm, module, className, isStatic, signature) {
+                    let method = signature.split('(')[0];
+
+                    return function(vm) {
+                        let jsObject = vm.getSlotForeign(0);
+                        let arg = vm.getSlotString(1);
+                        jsObject[method](arg);
+                    };
+                }
+            });
+
+            vm.interpret('main', document.getElementById("main").innerHTML);
+        </script>
+    </body>
+</html>
