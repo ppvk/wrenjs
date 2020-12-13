@@ -71,6 +71,7 @@ emcc \
 
 # Next we need to combine that compiled C with our Javascript API to complete
 # the library. This outputs wren.min.js in the out directory.
+npm install
 npx webpack --config scripts/webpack.js;
 
 # clean up
