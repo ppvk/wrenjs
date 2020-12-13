@@ -124,8 +124,7 @@ If left undefined, the text is printed to the console.
 ## errorFn
 
 When an error occurs, this will be called with the module name, line
-number, and an error message. If this is `NULL`, Wren doesn't report any
-errors.
+number, and an error message.
 
 If left undefined, the error is printed to the console.
 

@@ -11,6 +11,10 @@ you can just add to your html document.
 
     <script src="js/wren.min.js"></script>
 
+You can also istall via npm:
+
+    npm install ppvk/wrenjs#v0.3.0
+
 After that, you'll be able to access and use the `Wren` object to create a VM.
 
     // Give this a shot, and take a peek in the console.
