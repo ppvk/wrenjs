@@ -9,61 +9,77 @@
                 background-color: #000;
                 font-family: monospace;
             }
+
+            input {
+                border: solid 1px #ccc;
+                color: #fff;
+                background-color: #000;
+                width: 300px;
+                margin: 0.5em;
+            }
+
+            div {
+                padding: 0.1em;
+            }
+
         </style>
     </head>
     <body>
-
+        Try some wren:
+        <input id="input"></input>
         <code id="main" hidden>
-            class Console {
-                foreign static log(msg)
-                foreign static print(msg)
-            }
 
-            Console.log("xoxo")asedf
-            Console.print("xoxo")
-            Console.log("xoxo")
-            Console.print("xoxo")
         </code>
 
         <script src="../../out/wren.min.js"></script>
         <script>
-
-
-            /*
             function writeFn(text) {
                 let div = document.createElement('div');
-                div.innerText = text;
+                div.innerText = '> ' + text;
                 document.body.append(div);
             }
 
-            function loadModuleFn(module) {
-                return document.getElementById(module).innerText;
-            }
-
-            function log(vm) {
-                console.log('log :' + vm.getSlotString(1));
-            }
-
-            function print(vm) {
-                console.log('print :' + vm.getSlotString(1));
-            }
-
-            function bindForeignMethodFn(module, className, isStatic, signature) {
-                if (signature.includes('log')) {
-                    return log;
-                } else {
-                    return print;
+            function errorFn(errorType, module, line, msg) {
+                let str = '';
+                if (errorType == 0) {
+                    str = str + "["+module+" line " +line+ "] [Error] "+msg+"\n"
                 }
+                if (errorType == 1) {
+                    str = str + "["+module+" line "+line+"] in "+msg+"\n"
+                }
+                if (errorType == 2) {
+                    str = str + "[Runtime Error] "+msg+"\n"
+                }
+
+                let div = document.createElement('div');
+                div.innerText = str;
+                div.style.color = 'red';
+                document.body.append(div);
             }
 
             let vm = new Wren.VM({
                 writeFn: writeFn,
-                loadModuleFn: loadModuleFn,
-                bindForeignMethodFn: bindForeignMethodFn
+                errorFn: errorFn
             });
 
-            vm.interpret('main', document.getElementById("main").innerText);
-            */
+
+            let input = document.getElementById("input");
+            input.addEventListener('keypress', function(event) {
+                if (event.key == 'Enter') {
+                    interpret();
+                }
+            });
+
+            function interpret() {
+                let src = input.value;
+                let div = document.createElement('div');
+                div.innerText = src;
+                document.body.append(div);
+
+                vm.interpret('interpreter', src);
+                input.value = '';
+            }
+
         </script>
     </body>
 </html>

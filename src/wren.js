@@ -1,63 +1,22 @@
 import Module from './generated/libwren.js';
+import {Configuration} from './configuration.js';
 
+// Emscripten expects us to wait for the Module to be ready, but it's so darn
+// fast that we can just load it like so and call it good.
 let C;
 Module().then( function(context) {
     C = context;
 })
 
-
-// Define a series of default functions for the default Wren configuration
-
-// default function for a resolveModuleFn is to just return the name given.
-function defaultResolveModuleFn(importer, name) {
-    return name;
-}
-
-function defaultLoadModuleFn(name) {
-    return null;
-}
-
-function defaultBindForeignMethodFn(module, className, isStatic, signature) {
-    return null;
-}
-
-function defaultBindForeignClassFn(vm, module, className) {
-    return null;
-}
-
-function defaultWriteFn(toLog) {
-    let str = 'WRENJS:\n';
-    console.log(str + toLog);
-}
-
-function defaultErrorFn(errorType, module, line, msg) {
-    let str = 'WRENJS:\n';
-    if (errorType == 0) {
-      console.warn(
-          str + "["+module+" line " +line+ "] [Error] "+msg+"\n"
-      );
-    }
-    if (errorType == 1) {
-      console.warn(
-          str + "["+module+" line "+line+"] in "+msg+"\n"
-      );
-    }
-    if (errorType == 2) {
-      console.warn(
-          str + "[Runtime Error] "+msg+"\n"
-      );
-    }
-}
-
 export class VM {
     constructor(config) {
         let default_config = {
-            resolveModuleFn     : defaultResolveModuleFn,
-            loadModuleFn        : defaultLoadModuleFn,
-            bindForeignMethodFn : defaultBindForeignMethodFn,
-            bindForeignClassFn  : defaultBindForeignClassFn,
-            writeFn             : defaultWriteFn,
-            errorFn             : defaultErrorFn
+            resolveModuleFn     : Configuration.defaultResolveModuleFn,
+            loadModuleFn        : Configuration.defaultLoadModuleFn,
+            bindForeignMethodFn : Configuration.defaultBindForeignMethodFn,
+            bindForeignClassFn  : Configuration.defaultBindForeignClassFn,
+            writeFn             : Configuration.defaultWriteFn,
+            errorFn             : Configuration.defaultErrorFn
         }
         this.config = Object.assign(default_config, config);
 
