@@ -57,28 +57,30 @@
                 document.body.append(div);
             }
 
-            let vm = new Wren.VM({
-                writeFn: writeFn,
-                errorFn: errorFn
-            });
+            Wren.ready.then(_ => {
+                let vm = new Wren.VM({
+                    writeFn: writeFn,
+                    errorFn: errorFn
+                });
 
 
-            let input = document.getElementById("input");
-            input.addEventListener('keypress', function(event) {
-                if (event.key == 'Enter') {
-                    interpret();
+                let input = document.getElementById("input");
+                input.addEventListener('keypress', function(event) {
+                    if (event.key == 'Enter') {
+                        interpret();
+                    }
+                });
+
+                function interpret() {
+                    let src = input.value;
+                    let div = document.createElement('div');
+                    div.innerText = src;
+                    document.body.append(div);
+
+                    vm.interpret('interpreter', src);
+                    input.value = '';
                 }
             });
-
-            function interpret() {
-                let src = input.value;
-                let div = document.createElement('div');
-                div.innerText = src;
-                document.body.append(div);
-
-                vm.interpret('interpreter', src);
-                input.value = '';
-            }
 
         </script>
     </body>

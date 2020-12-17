@@ -1,12 +1,16 @@
 import Module from './generated/libwren.js';
 import {Configuration} from './configuration.js';
 
-// Emscripten expects us to wait for the Module to be ready, but it's so darn
-// fast that we can just load it like so and call it good.
-let C;
-Module().then( function(context) {
+let C = {
+    ccall: function(method) {
+        console.warn('Tried calling ' + method + '\nwrenjs is not loaded!');
+    }
+};
+
+export var ready = Module().then( function(context) {
     C = context;
-})
+});
+
 
 export class VM {
     constructor(config) {

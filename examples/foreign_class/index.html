@@ -32,32 +32,34 @@
                 }
             }
 
-            let vm = new Wren.VM({
+            Wren.ready.then(_ => {
+                let vm = new Wren.VM({
 
-                bindForeignClassFn: function(vm, module, className) {
-                    function a(vm) {
-                        let name = vm.getSlotString(1);
-                        let jsGoblin = new Goblin(name);
-                        vm.setSlotNewForeign(0, 0, jsGoblin);
+                    bindForeignClassFn: function(vm, module, className) {
+                        function a(vm) {
+                            let name = vm.getSlotString(1);
+                            let jsGoblin = new Goblin(name);
+                            vm.setSlotNewForeign(0, 0, jsGoblin);
+                        }
+
+                        return {
+                            allocate: a
+                        }
+                    },
+
+                    bindForeignMethodFn: function(vm, module, className, isStatic, signature) {
+                        let method = signature.split('(')[0];
+
+                        return function(vm) {
+                            let jsObject = vm.getSlotForeign(0);
+                            let arg = vm.getSlotString(1);
+                            jsObject[method](arg);
+                        };
                     }
+                });
 
-                    return {
-                        allocate: a
-                    }
-                },
-
-                bindForeignMethodFn: function(vm, module, className, isStatic, signature) {
-                    let method = signature.split('(')[0];
-
-                    return function(vm) {
-                        let jsObject = vm.getSlotForeign(0);
-                        let arg = vm.getSlotString(1);
-                        jsObject[method](arg);
-                    };
-                }
+                vm.interpret('main', document.getElementById("main").innerHTML);
             });
-
-            vm.interpret('main', document.getElementById("main").innerHTML);
         </script>
     </body>
 </html>
