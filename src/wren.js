@@ -325,3 +325,9 @@ export class VM {
         );
     }
 }
+
+// Add to the exported module.
+//export var Wren = {
+//  'ready': ready,
+//  'VM': VM
+//}

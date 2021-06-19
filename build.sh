@@ -1,5 +1,4 @@
 #!/bin/bash
-
 clear
 
 # The first thing we need, is the Emscripten SDK.
@@ -21,7 +20,7 @@ if ! [[ -d "./wren" ]]; then
     # clone wren
     git clone https://github.com/wren-lang/wren.git --branch 0.3.0
 
-    # If we're pulling it, we might as well get it built. That will save time if
+    # If we're pulling it, we might as well get it built.
     # That will save time later during dev, as we aren't changing wren's code.
     # Use emscripten to generate a bytecode libwren.a
     cd wren/projects/make
@@ -74,7 +73,12 @@ emcc \
 if ! [[ -d "./node_modules" ]]; then
     npm install
 fi
-npx webpack --config scripts/webpack.js;
+
+npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --name "Wren"
+npx uglifyjs --verbose ./src/generated/wren-bundle.js -o ./out/wren.min.js
+echo "Output wren.min.js in the out directory."
 
 # clean up
 rm -r src/generated
+
+echo "done."
