@@ -265,12 +265,6 @@ WrenConfiguration config;
 
 EMSCRIPTEN_KEEPALIVE
 WrenVM* shimNewVM() {
-    EM_ASM({
-        if (Wren == undefined) {
-          throw('Global Wren object is missing!');
-        }
-    });
-
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.errorFn = shimErrorFn;
