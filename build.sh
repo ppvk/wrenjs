@@ -74,8 +74,12 @@ if ! [[ -d "./node_modules" ]]; then
     npm install
 fi
 
+# Bundle our ES6 modules up into a self contained bundle.
 npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --name "Wren"
-npx uglifyjs --verbose ./src/generated/wren-bundle.js -o ./out/wren.min.js
+
+# Minify the generated bundle
+npx uglifyjs --verbose ./src/generated/wren-bundle.js \
+    -o ./out/wren.min.js -c -m
 echo "Output wren.min.js in the out directory."
 
 # clean up
