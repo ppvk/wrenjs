@@ -5,7 +5,7 @@ clear
 # We check to see if it is already here, and pull it if it's not.
 if ! [[ -d "./emsdk" ]]; then
     # Get portable emscripten
-    git clone https://github.com/emscripten-core/emsdk.git --branch 2.0.10
+    git clone https://github.com/emscripten-core/emsdk.git --branch 2.0.21
     ./emsdk/emsdk install latest
     ./emsdk/emsdk activate latest
 fi
@@ -64,7 +64,7 @@ emcc \
     -s ENVIRONMENT='web' -s JS_MATH=1 \
     -s MODULARIZE=1 -s EXPORT_ES6=1 -s FILESYSTEM=0 -s SINGLE_FILE=1 \
     -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 \
-    -s INCOMING_MODULE_JS_API=[] -s EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
+    -s INCOMING_MODULE_JS_API=[] -s EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
     -s EXPORTED_FUNCTIONS=$fn \
     -Werror --memory-init-file 0 \
 

@@ -1,7 +1,7 @@
 Using [emscripten](https://emscripten.org/)
 to transpile Bob Nystrom's [wren](http:wren.io) programming language to Javascript.
 
-wren: 0.3.0 | emscripten: 2.0.10
+wren: 0.3.0 | emscripten: 2.0.21
 
 [Demo](./examples/simple/index.html)
 
