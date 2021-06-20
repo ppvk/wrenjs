@@ -3,9 +3,6 @@
 #include "emscripten.h"
 #include "wren.h"
 
-#define WREN_OPT_META 1
-#define WREN_OPT_RANDOM 1
-
 /*
     This C file contains the bindings that connect the world of wren to the
     world of JavaScript.
@@ -69,20 +66,18 @@ const char* shimResolveModuleFn(WrenVM* vm,
     EM_ASM({
         let importer = Wren.VM[$0].getSlotString(0);
         let name = Wren.VM[$0].getSlotString(1);
-
-        console.log('C:' + [importer, name]);
-
         let output = Wren.VM[$0]._resolveModuleFn(importer, name);
-        console.log(output);
         Wren.VM[$0].setSlotString(2, output);
+
     }, vm);
 
     const char* output = wrenGetSlotString(vm, 2);
-    return (char*)output;
+
+    return name;
 }
 
 WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
-    wrenEnsureSlots(vm, 2);
+    wrenEnsureSlots(vm, 3);
     wrenSetSlotString(vm, 0, name);
 
     EM_ASM({
@@ -103,15 +98,13 @@ WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
 
     }, vm);
 
-    // TODO need to hook up LoadModuleCompleteFn to JS land.
-
     WrenLoadModuleResult result = {0};
-    result.source = wrenGetSlotString(vm, 1);
 
-    if (wrenGetSlotBool(vm, 2) == false) {
-        result.source = NULL;
+    if (wrenGetSlotBool(vm, 2) == true) {
+      result.source = wrenGetSlotString(vm, 1);
+    } else {
+      result.source = NULL;
     }
-
     return result;
 }
 

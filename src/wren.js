@@ -85,7 +85,6 @@ export class VM {
     */
 
     _resolveModuleFn(importer, name) {
-        console.log([importer, name]);
         return this.config.resolveModuleFn(importer, name);
     }
 
