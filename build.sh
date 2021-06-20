@@ -18,7 +18,7 @@ clear
 # If not, we pull that as well.
 if ! [[ -d "./wren" ]]; then
     # clone wren
-    git clone https://github.com/wren-lang/wren.git --branch 0.3.0
+    git clone https://github.com/wren-lang/wren.git --branch 0.4.0
 
     # If we're pulling it, we might as well get it built.
     # That will save time later during dev, as we aren't changing wren's code.
@@ -78,9 +78,13 @@ fi
 npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --name "Wren"
 
 # Minify the generated bundle
-npx uglifyjs --verbose ./src/generated/wren-bundle.js \
+npx uglifyjs ./src/generated/wren-bundle.js \
     -o ./out/wren.min.js -c -m
 echo "Output wren.min.js in the out directory."
+
+# Generate our documentation
+rm -r docs
+npx jsdoc -d docs ./src/wren.js
 
 # clean up
 rm -r src/generated

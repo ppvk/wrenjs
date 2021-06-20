@@ -1,6 +1,6 @@
 {
   "name": "wrenjs",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Using emscripten to transpile the wren programming language to Javascript.",
   "main": "out/wren.min.js",
   "directories": {
@@ -14,6 +14,7 @@
   "license": "MIT",
   "homepage": "https://github.com/ppvk/wrenjs#readme",
   "devDependencies": {
+    "jsdoc": "^3.6.7",
     "rollup": "^2.52.1",
     "uglify-js": "^3.13.9"
   }

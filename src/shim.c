@@ -50,7 +50,7 @@
         - works using `eval` (we're stuck in the global context)
         + lets us pass Strings to JavaScript pretty easily
     - EM_ASM/EM_JS
-        * is nicely scoped
+        + is nicely scoped
         - strings are a bit tricky to pass around.
 
     I've opted to use wrenSlots as much as possible, and EM_ASM to trigger the
@@ -67,7 +67,7 @@ const char* shimResolveModuleFn(WrenVM* vm,
         let importer = Wren.VM[$0].getSlotString(0);
         let name = Wren.VM[$0].getSlotString(1);
 
-        let output = Wren.VM[$0].config.resolveModuleFn(importer, name);
+        let output = Wren.VM[$0].config._resolveModuleFn(importer, name);
         Wren.VM[$0].setSlotString(2, output);
     }, vm);
 
@@ -75,13 +75,13 @@ const char* shimResolveModuleFn(WrenVM* vm,
     return (char*)output;
 }
 
-char* shimLoadModuleFn(WrenVM* vm, const char* name) {
+WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
     wrenEnsureSlots(vm, 2);
     wrenSetSlotString(vm, 0, name);
 
     EM_ASM({
         let name = Wren.VM[$0].getSlotString(0);
-        let module = Wren.VM[$0].loadModule(name);
+        let module = Wren.VM[$0]._loadModule(name);
 
         if (module == null) {
             // Could not find module
@@ -97,12 +97,16 @@ char* shimLoadModuleFn(WrenVM* vm, const char* name) {
 
     }, vm);
 
+    // TODO need to hook up LoadModuleCompleteFn to JS land.
+
+    WrenLoadModuleResult result = {0};
+    result.source = wrenGetSlotString(vm, 1);
+
     if (wrenGetSlotBool(vm, 2) == false) {
-        return NULL;
+        result.source = NULL;
     }
 
-    const char* module = wrenGetSlotString(vm, 1);
-    return (char*)module;
+    return result;
 }
 
 
@@ -190,7 +194,7 @@ WrenForeignClassMethods shimBindForeignClassFn(
         let module = Wren.VM[$0].getSlotString(0);
         let className = Wren.VM[$0].getSlotString(1);
 
-        let classMethods = Wren.VM[$0].bindForeignClass(module, className);
+        let classMethods = Wren.VM[$0]._bindForeignClass(module, className);
 
         if (classMethods == null) {
             // We did not find this class
@@ -236,7 +240,7 @@ void shimWriteFn(WrenVM* vm, const char* text) {
 
     EM_ASM({
         let text = Wren.VM[$0].getSlotString(0);
-        Wren.VM[$0].write(text);
+        Wren.VM[$0]._write(text);
     }, vm);
 }
 
@@ -256,7 +260,7 @@ void shimErrorFn(
         let line = Wren.VM[$0].getSlotDouble(2);
         let message = Wren.VM[$0].getSlotString(3);
 
-        Wren.VM[$0].error(type, module, line, message);
+        Wren.VM[$0]._error(type, module, line, message);
     }, vm);
 }
 
