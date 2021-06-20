@@ -140,7 +140,7 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
         let isStatic = Wren.VM[$0].getSlotBool(2);
         let signature = Wren.VM[$0].getSlotString(3);
 
-        let foreignMethodFn = Wren.VM[$0].bindForeignMethod(
+        let foreignMethodFn = Wren.VM[$0]._bindForeignMethod(
             module, className, isStatic, signature
         );
 
