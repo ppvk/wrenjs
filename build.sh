@@ -84,7 +84,7 @@ echo "Output wren.min.js in the out directory."
 
 # Generate our documentation
 rm -r docs
-npx jsdoc -d docs ./src/wren.js
+npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js
 
 # clean up
 rm -r src/generated
