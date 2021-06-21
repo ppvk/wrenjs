@@ -744,13 +744,11 @@
                 document.body.append(div);
             }
 
-            Wren.ready.then(_ => {
-                let vm = new Wren.VM({
-                    writeFn: writeFn,
-                    errorFn: errorFn
-                });
-                vm.interpret('interpreter', document.querySelector('#main').innerText);
+            let vm = new Wren.VM({
+                writeFn: writeFn,
+                errorFn: errorFn
             });
+            vm.interpret('interpreter', document.querySelector('#main').innerText);
 
         </script>
     </body>

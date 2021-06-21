@@ -61,15 +61,15 @@ fn="$fn]"
 # where we put those exports from above. This generates libwren.js in the
 # "src/generated" directory.
 emcc -DWREN_OPT_RANDOM -DWREN_OPT_META \
-    wren/wren.c src/shim.c \
-    -I wren/src/include \
-    -o src/generated/libwren.js \
-    -O0 -g \
-    -s ASSERTIONS=0 \
-    -s ENVIRONMENT='web' -s JS_MATH=1 \
-    -s MODULARIZE=1 -s EXPORT_ES6=1 -s FILESYSTEM=0 -s SINGLE_FILE=1 \
-    -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 \
-    -s INCOMING_MODULE_JS_API=[] -s EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
+    wren/wren.c src/shim.c -I wren/src/include -o src/generated/libwren.js \
+    -O0 -s WASM=1 \
+    -s ASSERTIONS=0 -s ENVIRONMENT='web' \
+    -s JS_MATH=1 -s WASM_ASYNC_COMPILATION=0 \
+    -s MODULARIZE=1 -s EXPORT_ES6=1 \
+    -s FILESYSTEM=0 -s SINGLE_FILE=1 \
+    -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 \
+    -s INCOMING_MODULE_JS_API=[] \
+    -s EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
     -s EXPORTED_FUNCTIONS=$fn \
     -Werror --memory-init-file 0 \
 
@@ -84,8 +84,7 @@ npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --na
 
 # Minify the generated bundle
 npx uglifyjs ./src/generated/wren-bundle.js \
-    -o ./out/wren.min.js \
-    -b #-c -m  # Production
+    -o ./out/wren.min.js -c -m
 echo "Output wren.min.js in the out directory."
 
 # Generate our documentation
