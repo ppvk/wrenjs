@@ -50,12 +50,13 @@
                     bindForeignMethodFn: function(vm, module, className, isStatic, signature) {
                         let method = signature.split('(')[0];
 
-                        return function(vm) {
+                        return function() {
                             let jsObject = vm.getSlotForeign(0);
                             let arg = vm.getSlotString(1);
                             jsObject[method](arg);
                         };
                     }
+
                 });
 
                 vm.interpret('main', document.getElementById("main").innerHTML);

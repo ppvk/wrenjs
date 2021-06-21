@@ -20,12 +20,17 @@ if ! [[ -d "./wren" ]]; then
     # clone wren
     git clone https://github.com/wren-lang/wren.git --branch 0.4.0
 
+    cd wren
+    python3 util/generate_amalgamation.py > wren.c
+    cd ../
+
     # If we're pulling it, we might as well get it built.
     # That will save time later during dev, as we aren't changing wren's code.
     # Use emscripten to generate a bytecode libwren.a
-    cd wren/projects/make
-    emmake make config=release_32bit wren
-    cd ../../../
+
+    #cd wren/projects/make
+    #emmake make config=release_32bit wren
+    #cd ../../../
 fi
 
 # Next we create a temporary directory in our src for generated files.
@@ -55,11 +60,11 @@ fn="$fn]"
 # between the C and JS worlds. Note the EXPORTED_FUNCTIONS setting, that is
 # where we put those exports from above. This generates libwren.js in the
 # "src/generated" directory.
-emcc \
-    wren/lib/libwren.a src/shim.c \
+emcc -DWREN_OPT_RANDOM -DWREN_OPT_META \
+    wren/wren.c src/shim.c \
     -I wren/src/include \
     -o src/generated/libwren.js \
-    -O3 \
+    -O0 -g \
     -s ASSERTIONS=0 \
     -s ENVIRONMENT='web' -s JS_MATH=1 \
     -s MODULARIZE=1 -s EXPORT_ES6=1 -s FILESYSTEM=0 -s SINGLE_FILE=1 \
@@ -80,7 +85,7 @@ npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --na
 # Minify the generated bundle
 npx uglifyjs ./src/generated/wren-bundle.js \
     -o ./out/wren.min.js \
-    -c -m  # Production
+    -b #-c -m  # Production
 echo "Output wren.min.js in the out directory."
 
 # Generate our documentation

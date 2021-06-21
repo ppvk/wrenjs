@@ -101,9 +101,7 @@ export class VM {
         // C will pass this a pointer for the wren VM, and we need to get the
         // JS version to the JS function.
         let vm = this;
-        return function(_) {
-            method(vm);
-        }
+        return method;
     }
 
     _bindForeignClass(module, className) {
@@ -113,10 +111,10 @@ export class VM {
         // a pointer to the VM, and we need to convert that to a JS Wren.VM
         let vm = this;
         return {
-            allocate: function(_) {
+            allocate: function() {
                 methods.allocate(vm);
             },
-            finalize: function(_) {
+            finalize: function() {
                 methods.finalize(vm);
 
                 let pointer = C.ccall('wrenGetSlotForeign',

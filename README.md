@@ -3,7 +3,7 @@ to transpile Bob Nystrom's [wren](http:wren.io) programming language to Javascri
 
 wren: 0.4.0 | emscripten: 2.0.21
 
-[Demo](./examples/simple/index.html)
+# In the process of a rewrite. Not for production use.
 
 ### Quick Start
 
@@ -14,7 +14,7 @@ you can just add to your html document.
 
 You can also istall via npm:
 
-    npm install ppvk/wrenjs#v0.4.0
+    npm install ppvk/wrenjs#v0.3.0
 
 After that, you'll be able to access and use the `Wren` object to create a VM.
 

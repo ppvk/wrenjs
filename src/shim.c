@@ -77,6 +77,7 @@ const char* shimResolveModuleFn(WrenVM* vm,
 }
 
 WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
+    WrenLoadModuleResult result = {0};
     wrenEnsureSlots(vm, 3);
     wrenSetSlotString(vm, 0, name);
 
@@ -97,8 +98,6 @@ WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
         }
 
     }, vm);
-
-    WrenLoadModuleResult result = {0};
 
     if (wrenGetSlotBool(vm, 2) == true) {
       result.source = wrenGetSlotString(vm, 1);
@@ -146,6 +145,7 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
         // We use a Bool in slot 0 to let our C code know that we're missing the
         // JavaScript function to bind.
         if (foreignMethodFn == null) {
+            console.log('found null foreignMethod');
             // We did not find a method
             Wren.VM[$0].setSlotBool(0, false);
         } else {
@@ -271,10 +271,10 @@ WrenVM* shimNewVM() {
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.errorFn = shimErrorFn;
-    config.bindForeignMethodFn = shimBindForeignMethodFn;
-    config.bindForeignClassFn = shimBindForeignClassFn;
-    config.loadModuleFn = shimLoadModuleFn;
-    config.resolveModuleFn = shimResolveModuleFn;
+    //config.bindForeignMethodFn = shimBindForeignMethodFn;
+    //config.bindForeignClassFn = shimBindForeignClassFn;
+    //config.loadModuleFn = shimLoadModuleFn;
+    //config.resolveModuleFn = shimResolveModuleFn;
 
     WrenVM* vm = wrenNewVM(&config);
     return vm;
