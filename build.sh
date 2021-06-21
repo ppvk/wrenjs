@@ -84,8 +84,7 @@ npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --na
 
 # Minify the generated bundle
 npx uglifyjs ./src/generated/wren-bundle.js \
-    -o ./out/wren.min.js -c -m
-echo "Output wren.min.js in the out directory."
+    -o ./out/wren.js -b
 
 # Generate our documentation
 rm -r docs

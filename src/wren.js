@@ -3,7 +3,6 @@
  */
 
 import libwren from './generated/libwren.js';
-import {Configuration} from './configuration.js';
 
 /*
 * 'libwren' represents our connection to the Wren C API, through emscripten's ccall function.
@@ -27,6 +26,66 @@ export function getVersionNumber() {
   return result;
 }
 
+
+/**
+* The type of error returned by the [VM].
+* @property {number} COMPILE A syntax or resolution error detected at compile time.
+* @property {number} RUNTIME The error message for a runtime error.
+* @property {number} STACK_TRACE One entry of a runtime error's stack trace.
+*/
+export var ErrorType = {
+  COMPILE:      0,
+  RUNTIME:      1,
+  STACK_TRACE:  2
+}
+
+/**
+* Configuration for a [VM].
+*/
+export class Configuration {
+
+    // Defaults //
+    static defaultResolveModuleFn(importer, name) {
+        return name;
+    }
+
+    static defaultLoadModuleFn(name) {
+        return null;
+    }
+
+    static defaultBindForeignMethodFn(vm, module, className, isStatic, signature) {
+        return null;
+    }
+
+    static defaultBindForeignClassFn(vm, module, className) {
+        return null;
+    }
+
+    static defaultWriteFn(toLog) {
+        let str = 'WRENJS: ';
+        console.log(str + toLog);
+    }
+
+    static defaultErrorFn(errorType, module, line, msg) {
+        let str = 'WRENJS: ';
+        if (errorType == 0) {
+          console.warn(
+              str + "["+module+" line " +line+ "] [Error] "+msg+"\n"
+          );
+        }
+        if (errorType == 1) {
+          console.warn(
+              str + "["+module+" line "+line+"] in "+msg+"\n"
+          );
+        }
+        if (errorType == 2) {
+          console.warn(
+              str + "[Runtime Error] "+msg+"\n"
+          );
+        }
+    }
+}
+
 /**
 * A single virtual machine for executing Wren code.
 *
@@ -39,8 +98,8 @@ export class VM {
     * will copy the configuration data, so the argument passed to this can be
     * freed after calling this. If [configuration] is undefined, uses a default
     * configuration.
-    * @param {Object} configuration an object containing any or all of the
-    * following properties:
+    * @param {Object} configuration
+    * an object containing any or all of the following properties:
     * resolveModuleFn, loadModuleFn, bindForeignMethodFn, bindForeignClassFn,
     * writeFn, errorFn
     */

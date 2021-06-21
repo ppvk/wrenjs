@@ -76,8 +76,16 @@ const char* shimResolveModuleFn(WrenVM* vm,
     return name;
 }
 
+void loadModuleComplete(WrenVM* vm, const char* module, WrenLoadModuleResult result) {
+  if(result.source) {
+    // Maybe free this?
+  }
+}
+
+
 WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
     WrenLoadModuleResult result = {0};
+
     wrenEnsureSlots(vm, 3);
     wrenSetSlotString(vm, 0, name);
 
@@ -86,10 +94,8 @@ WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
         let module = Module._VMs[$0]._loadModuleFn(name);
 
         if (module == null) {
+            console.log(module + ' not found.');
             // Could not find module
-            // This does throw a runtime error, as expected
-            // however it seems to complain about missing implementations rather
-            // than missing modules. TODO, need to look into this more.
             Module._VMs[$0].setSlotBool(2, false);
         } else {
             // Could find module
@@ -101,9 +107,9 @@ WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
 
     if (wrenGetSlotBool(vm, 2) == true) {
       result.source = wrenGetSlotString(vm, 1);
-    } else {
-      result.source = NULL;
+      result.onComplete = loadModuleComplete;
     }
+
     return result;
 }
 
@@ -270,10 +276,10 @@ WrenVM* shimNewVM() {
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.errorFn = shimErrorFn;
-    config.bindForeignMethodFn = shimBindForeignMethodFn;
-    config.bindForeignClassFn = shimBindForeignClassFn;
+    //config.bindForeignMethodFn = shimBindForeignMethodFn;
+    //config.bindForeignClassFn = shimBindForeignClassFn;
     config.loadModuleFn = shimLoadModuleFn;
-    config.resolveModuleFn = shimResolveModuleFn;
+    //config.resolveModuleFn = shimResolveModuleFn;
 
     WrenVM* vm = wrenNewVM(&config);
     return vm;
