@@ -35,8 +35,6 @@ For Example:
 
 [deltablue](./examples/deltablue/index.html)
 
-[foreign](./examples/foreign_class/index.html)
-
 [REPL](./examples/simple/index.html)
 
 

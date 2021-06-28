@@ -31,8 +31,9 @@
 
         </code>
 
-        <script src="../../out/wren.min.js"></script>
-        <script>
+        <script type="module">
+          import * as Wren from '../../out/wren.js';
+
             function writeFn(text) {
                 let div = document.createElement('div');
                 div.innerText = '> ' + text;

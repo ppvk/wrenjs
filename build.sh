@@ -62,7 +62,7 @@ fn="$fn]"
 # "src/generated" directory.
 emcc -DWREN_OPT_RANDOM -DWREN_OPT_META \
     wren/wren.c src/shim.c -I wren/src/include -o src/generated/libwren.js \
-    -O0 -s WASM=1 \
+    -O3 -s WASM=1 \
     -s ASSERTIONS=0 -s ENVIRONMENT='web' \
     -s JS_MATH=1 -s WASM_ASYNC_COMPILATION=0 \
     -s MODULARIZE=1 -s EXPORT_ES6=1 \
@@ -80,11 +80,11 @@ if ! [[ -d "./node_modules" ]]; then
 fi
 
 # Bundle our ES6 modules up into a self contained bundle.
-npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format umd --name "Wren"
+npx rollup ./src/wren.js --file ./src/generated/wren-bundle.js --format esm --name "Wren"
 
 # Minify the generated bundle
 npx uglifyjs ./src/generated/wren-bundle.js \
-    -o ./out/wren.js -b
+    -o ./out/wren.js -c -m
 
 # Generate our documentation
 rm -r docs
@@ -95,4 +95,4 @@ rm -r src/generated
 
 echo "done."
 
-npm run test
+#npm run test

@@ -717,9 +717,9 @@
             System.print(total)
             System.print("elapsed: %(System.clock - start)")
         </code>
+        <script type="module">
+            import * as Wren from '../../out/wren.js';
 
-        <script src="../../out/wren.min.js"></script>
-        <script>
             function writeFn(text) {
                 let div = document.createElement('div');
                 div.innerText = '> ' + text;
@@ -748,6 +748,7 @@
                 writeFn: writeFn,
                 errorFn: errorFn
             });
+
             vm.interpret('interpreter', document.querySelector('#main').innerText);
 
         </script>
