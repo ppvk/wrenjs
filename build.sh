@@ -94,3 +94,5 @@ npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js
 rm -r src/generated
 
 echo "done."
+
+npm run test

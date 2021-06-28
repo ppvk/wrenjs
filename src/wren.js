@@ -10,6 +10,7 @@ import libwren from './generated/libwren.js';
 */
 var Module = libwren();
 Module._VMs = {};
+Module._values = [];
 
 /**
 * Get the current wren version number.
@@ -53,7 +54,7 @@ export class Configuration {
         return null;
     }
 
-    static defaultBindForeignMethodFn(vm, module, className, isStatic, signature) {
+    static defaultBindForeignMethodFn(module, className, isStatic, signature) {
         return null;
     }
 
@@ -85,6 +86,7 @@ export class Configuration {
         }
     }
 }
+
 
 /**
 * A single virtual machine for executing Wren code.
@@ -140,15 +142,17 @@ export class VM {
     }
 
     _bindForeignMethod(module, className, isStatic, signature) {
-        let method = this.config.bindForeignMethodFn(this, module, className,
+        // This should return a function looking for a Wren.VM as its only arg.
+        let method = this.config.bindForeignMethodFn(module, className,
           isStatic, signature
         );
 
-        // This is the function we pass back to Module.
-        // C will pass this a pointer for the wren VM, and we need to get the
-        // JS version to the JS function.
+        // The wren C api expects a function looking for a pointer as its arg.
         let vm = this;
-        return method;
+        let wrappedMethod = function(pointer) {
+          method(vm);
+        }
+        return wrappedMethod;
     }
 
     _bindForeignClass(module, className) {
@@ -157,6 +161,7 @@ export class VM {
         // Similar to the bindForeignMethod fn above, C expects to pass these
         // a pointer to the VM, and we need to convert that to a JS Wren.VM
         let vm = this;
+
         return {
             allocate: function() {
                 methods.allocate(vm);
@@ -167,10 +172,10 @@ export class VM {
                 let pointer = Module.ccall('wrenGetSlotForeign',
                   'number',
                   ['number', 'number'],
-                  [this._pointer, 0]
+                  [vm._pointer, 0]
                 );
 
-                delete this._foreignClasses[pointer];
+                delete vm._foreignClasses[pointer];
             }
         }
     }
@@ -520,7 +525,6 @@ export class VM {
     * call the allocator foreign method. In there, call this to create the object
     * and then the constructor will be invoked when the allocator returns.
     *
-    * Returns a pointer to the foreign object's data. TODO: false.
     * @return {Object} the same foreignObject you passed in.
     * @param {number} slot
     * @param {number} classSlot

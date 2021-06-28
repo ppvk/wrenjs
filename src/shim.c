@@ -6,108 +6,106 @@
 /*
     This C file contains the bindings that connect the world of wren to the
     world of JavaScript.
+*/
 
-    We do this by making all the functions in the WrenConfiguration call out to
-    the JavaScript context, and trigger a sister JavaScript function. These are
-    stored in the configuration object attached to the JavaScript version of
-    the VM.
-    Often these functions will require arguments, and we pass those to
-    JavaScript land via the `wrenSetSlot` and `wrenGetSlot` family of functions.
+void modulePushString(const char* string) {
+  EM_ASM({
+      Module._values.push(
+        UTF8ToString($0)
+      );
+  }, string);
+}
 
-    For example, in the case of the `wrenWriteFn`,
-        1. Someone calls `System.print("x")` in wren
-        2. In the C context,
-            the WrenVM, calls `shimWriteFn("x");`
-        3. `shimWriteFn` then
-            a. stores the VM's pointer in wrenSlot 0,
-            b. and 'x' in wrenSlot 1,
-            c. then uses EM_ASM to tell the JavaScript context it has done so.
-        4. In the JavaScript context,
-            a) the VM's pointer is pulled from wrenSlot 0 and used to find the
-               JavaScript `Wren.VM` associated with it.
-            b) 'x' is pulled from wrenSlot 1 and used as the argument for
-                calling the JS version of the VM's `writeFn`.
+void modulePushDouble(double number) {
+  EM_ASM({
+      Module._values.push($0);
+  }, number);
+}
 
-    Through this style of implementation, the person trying to create and use
-    JavaScript `Wren.VM`s can just assign a regular JS function to their VM's
-    configuration object, and it just works.
 
-    In the JS context, they lose the 'wren' prefix, and are methods on instances
-    of the `Wren.VM` class. They also do not require the vm Pointer as an
-    argument.
+const char* moduleShiftString() {
+  int length = EM_ASM_INT({
+    let index = Module._values.length - 1;
+    return lengthBytesUTF8("" + Module._values[index]) + 1;
+  });
 
-    At the moment, you can statically access these VM instances by pointer.
-    for example,
-        `let vm = Wren.VM[123456];`
-    or within shim.js as,
-        `let vm = VM[123456];`
+  const char* string = malloc(length);
 
-    We use this pointer-indexing in the JavaScript we call from C
+  EM_ASM({
+      let s = "" + Module._values.shift();
+      stringToUTF8( s, $0, lengthBytesUTF8(s) + 1);
+  }, string);
 
-    There are solely emscripten-based ways of passing these arguments, but they
-    all have unpleasant limitations.
-    - emscripten_run_script
-        - works using `eval` (we're stuck in the global context)
-        + lets us pass Strings to JavaScript pretty easily
-    - EM_ASM/EM_JS
-        + is nicely scoped
-        - strings are a bit tricky to pass around.
+  return string;
+}
 
-    I've opted to use wrenSlots as much as possible, and EM_ASM to trigger the
-    relevant JavaScript functions.
+double moduleShiftDouble() {
+  return EM_ASM_DOUBLE({
+    let value = Module._values.shift();
+    return value;
+  });
+}
+
+/*
+    The following are wrappers for functions normally attached to a WrenConfiguration.
 */
 
 const char* shimResolveModuleFn(WrenVM* vm,
     const char* importer, const char* name) {
-    wrenEnsureSlots(vm, 3);
-    wrenSetSlotString(vm, 0, importer);
-    wrenSetSlotString(vm, 1, name);
+    modulePushString(importer);
+    modulePushString(name);
 
     EM_ASM({
-        let importer = Module._VMs[$0].getSlotString(0);
-        let name = Module._VMs[$0].getSlotString(1);
-        let output = Module._VMs[$0]._resolveModuleFn(importer, name);
-        Module._VMs[$0].setSlotString(2, output);
+        let importer = Module._values.shift();
+        let name = Module._values.shift();
 
+        let output = Module._VMs[$0]._resolveModuleFn(importer, name);
+        Module._values.push(output);
     }, vm);
 
-    const char* output = wrenGetSlotString(vm, 2);
+    const char* output = moduleShiftString();
 
-    return name;
+    if (strcmp(output, "null") == 1) {
+        return NULL;
+    } else {
+        return output;
+    }
 }
 
 void loadModuleComplete(WrenVM* vm, const char* module, WrenLoadModuleResult result) {
   if(result.source) {
-    // Maybe free this?
+    free((void*) result.source);
   }
 }
 
-
 WrenLoadModuleResult shimLoadModuleFn(WrenVM* vm, const char* name) {
-    WrenLoadModuleResult result = {0};
+    WrenLoadModuleResult result;
+    memset(&result, 0, sizeof(WrenLoadModuleResult));
 
-    wrenEnsureSlots(vm, 3);
-    wrenSetSlotString(vm, 0, name);
+    modulePushString(name);
 
     EM_ASM({
-        let name = Module._VMs[$0].getSlotString(0);
+        let name = Module._values.shift();
         let module = Module._VMs[$0]._loadModuleFn(name);
 
         if (module == null) {
-            console.log(module + ' not found.');
             // Could not find module
-            Module._VMs[$0].setSlotBool(2, false);
+            Module._values.push(0);
         } else {
             // Could find module
-            Module._VMs[$0].setSlotBool(2, true);
-            Module._VMs[$0].setSlotString(1, module);
+            Module._values.push(1);
+            Module._values.push(module);
         }
 
     }, vm);
 
-    if (wrenGetSlotBool(vm, 2) == true) {
-      result.source = wrenGetSlotString(vm, 1);
+    bool found = moduleShiftDouble();
+    if (found == 1) {
+      result.source = moduleShiftString();
       result.onComplete = loadModuleComplete;
+    } else {
+      result.source = NULL;
+      result.onComplete = NULL;
     }
 
     return result;
@@ -131,18 +129,22 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
     const char* signature) {
 
     // Pepare to send the arguments to JavaScript
-    wrenEnsureSlots(vm, 4);
-    wrenSetSlotString(vm, 0, module);
-    wrenSetSlotString(vm, 1, className);
-    wrenSetSlotBool(vm, 2, isStatic);
-    wrenSetSlotString(vm, 3, signature);
+    modulePushString(module);
+    modulePushString(className);
+    if (isStatic) {
+      modulePushDouble(1); // true
+    } else {
+      modulePushDouble(0); // false
+    }
+    modulePushString(signature);
+
 
     EM_ASM({
         // Get those arguments
-        let module = Module._VMs[$0].getSlotString(0);
-        let className = Module._VMs[$0].getSlotString(1);
-        let isStatic = Module._VMs[$0].getSlotBool(2);
-        let signature = Module._VMs[$0].getSlotString(3);
+        let module = Module._values.shift();
+        let className = Module._values.shift();
+        let isStatic = Module._values.shift() == 1;
+        let signature = Module._values.shift();
 
         let foreignMethodFn = Module._VMs[$0]._bindForeignMethod(
             module, className, isStatic, signature
@@ -152,10 +154,10 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
         // JavaScript function to bind.
         if (foreignMethodFn == null) {
             // We did not find a method
-            Module._VMs[$0].setSlotBool(0, false);
+            Module._values.push(0);
         } else {
             // We did find a method
-            Module._VMs[$0].setSlotBool(0, true);
+            Module._values.push(1);
 
             let fnPointer = addFunction(foreignMethodFn, 'vi');
             // this sets our reusable pointer to the JavaScript function we just
@@ -170,11 +172,11 @@ WrenForeignMethodFn shimBindForeignMethodFn(WrenVM* vm,
 
     }, vm);
 
-    if (wrenGetSlotBool(vm, 0) == false) {
+    if (moduleShiftDouble() == 0) {
         return NULL;
+    } else {
+      return shimForeignMethod;
     }
-
-    return shimForeignMethod;
 }
 
 
@@ -190,22 +192,21 @@ void setClassMethods(WrenForeignMethodFn allocate, WrenFinalizerFn finalize) {
 WrenForeignClassMethods shimBindForeignClassFn(
     WrenVM* vm, const char* module, const char* className) {
 
-    wrenEnsureSlots(vm, 2);
-    wrenSetSlotString(vm, 0, module);
-    wrenSetSlotString(vm, 1, className);
+    modulePushString(module);
+    modulePushString(className);
 
     EM_ASM({
-        let module = Module._VMs[$0].getSlotString(0);
-        let className = Module._VMs[$0].getSlotString(1);
+        let module = Module._values.shift();
+        let className = Module._values.shift();
 
         let classMethods = Module._VMs[$0]._bindForeignClass(module, className);
 
         if (classMethods == null) {
             // We did not find this class
-            Module._VMs[$0].setSlotBool(0, false);
+            Module._values.push(0);
         } else {
             // We did find this class
-            Module._VMs[$0].setSlotBool(0, true);
+            Module._values.push(1);
 
             // Convert the JS functions to pointers
             let allocatePtr = addFunction(classMethods.allocate, 'vi');
@@ -223,14 +224,14 @@ WrenForeignClassMethods shimBindForeignClassFn(
 
     WrenForeignClassMethods methods;
 
-    if (wrenGetSlotBool(vm, 0) == false) {
+    if (moduleShiftDouble() == 0) {
         return methods;
+    } else {
+      methods.allocate = shimAllocate;
+      methods.finalize = shimFinalize;
+      return methods;
     }
 
-    methods.allocate = shimAllocate;
-    methods.finalize = shimFinalize;
-
-    return methods;
 }
 
 
@@ -239,11 +240,10 @@ void shimWriteFn(WrenVM* vm, const char* text) {
         return;
     }
 
-    wrenEnsureSlots(vm, 1);
-    wrenSetSlotString(vm, 0, text);
+    modulePushString(text);
 
     EM_ASM({
-        let text = Module._VMs[$0].getSlotString(0);
+        let text = Module._values.shift();
         Module._VMs[$0]._write(text);
     }, vm);
 }
@@ -252,17 +252,16 @@ void shimErrorFn(
     WrenVM* vm, WrenErrorType type, const char* module, int line,
     const char* message) {
 
-    wrenEnsureSlots(vm, 4);
-    wrenSetSlotDouble(vm, 0, type);
-    wrenSetSlotString(vm, 1, module);
-    wrenSetSlotDouble(vm, 2, line);
-    wrenSetSlotString(vm, 3, message);
+    modulePushDouble(type);
+    modulePushString(module);
+    modulePushDouble(line);
+    modulePushString(message);
 
     EM_ASM({
-        let type = Module._VMs[$0].getSlotDouble(0);
-        let module = Module._VMs[$0].getSlotString(1);
-        let line = Module._VMs[$0].getSlotDouble(2);
-        let message = Module._VMs[$0].getSlotString(3);
+        let type = Module._values.shift();
+        let module = Module._values.shift();
+        let line = Module._values.shift();
+        let message = Module._values.shift();
 
         Module._VMs[$0]._error(type, module, line, message);
     }, vm);
@@ -273,13 +272,14 @@ WrenConfiguration config;
 
 EMSCRIPTEN_KEEPALIVE
 WrenVM* shimNewVM() {
+
     wrenInitConfiguration(&config);
     config.writeFn = shimWriteFn;
     config.errorFn = shimErrorFn;
-    //config.bindForeignMethodFn = shimBindForeignMethodFn;
-    //config.bindForeignClassFn = shimBindForeignClassFn;
+    config.bindForeignMethodFn = shimBindForeignMethodFn;
+    config.bindForeignClassFn = shimBindForeignClassFn;
     config.loadModuleFn = shimLoadModuleFn;
-    //config.resolveModuleFn = shimResolveModuleFn;
+    config.resolveModuleFn = shimResolveModuleFn;
 
     WrenVM* vm = wrenNewVM(&config);
     return vm;
