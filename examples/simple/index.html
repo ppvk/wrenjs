@@ -57,7 +57,6 @@
                 document.body.append(div);
             }
 
-            Wren.ready.then(_ => {
                 let vm = new Wren.VM({
                     writeFn: writeFn,
                     errorFn: errorFn
@@ -80,7 +79,6 @@
                     vm.interpret('interpreter', src);
                     input.value = '';
                 }
-            });
 
         </script>
     </body>

@@ -32,7 +32,6 @@
                 }
             }
 
-            Wren.ready.then(_ => {
                 let vm = new Wren.VM({
 
                     bindForeignClassFn: function(vm, module, className) {
@@ -60,7 +59,6 @@
                 });
 
                 vm.interpret('main', document.getElementById("main").innerHTML);
-            });
         </script>
     </body>
 </html>
