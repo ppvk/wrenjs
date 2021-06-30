@@ -4,7 +4,7 @@
   "description": "Using emscripten to transpile the wren programming language to Javascript.",
   "main": "out/wren.min.js",
   "scripts": {
-    "test": "node ./test/api.mjs"
+    "test": "deno run --allow-read ./test/test.mjs"
   },
   "directories": {
     "example": "examples"

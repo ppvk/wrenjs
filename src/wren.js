@@ -1,4 +1,9 @@
 /**
+ * wrenjs is an ES6 module.
+ *
+ * @example
+ * import * as Wren from "./path/to/wren.js";
+ *
  * @module Wren
  */
 
@@ -16,7 +21,8 @@ Module._values = [];
 * Get the current wren version number.
 *
 * Can be used to range checks over versions.
-* @return {number}
+* @return {number} A monotonically increasing numeric representation of the
+*                  version number.
 */
 export function getVersionNumber() {
   let result = Module.ccall('wrenGetVersionNumber',
@@ -40,10 +46,49 @@ export var ErrorType = {
   STACK_TRACE:  2
 }
 
+
 /**
-* Configuration for a [VM].
+* A single virtual machine for executing Wren code.
 */
-export class Configuration {
+export class VM {
+
+    /**
+    * Creates a new Wren virtual machine using the given [configuration].
+    * If [configuration] is undefined, uses a default
+    * configuration.
+    * @param {Object} configuration
+    * an object containing any or all of the following properties:
+    * resolveModuleFn, loadModuleFn, bindForeignMethodFn, bindForeignClassFn,
+    * writeFn, errorFn.
+    *
+    * @example
+    * let vm = new Wren.VM({
+    *   writeFn: function(toWrite) {
+    *     console.log(toWrite);
+    *   }
+    * });
+    */
+    constructor(config) {
+        // Replaces wrenInitConfiguration
+        let default_config = {
+            resolveModuleFn     : VM.defaultResolveModuleFn,
+            loadModuleFn        : VM.defaultLoadModuleFn,
+            bindForeignMethodFn : VM.defaultBindForeignMethodFn,
+            bindForeignClassFn  : VM.defaultBindForeignClassFn,
+            writeFn             : VM.defaultWriteFn,
+            errorFn             : VM.defaultErrorFn
+        }
+        this.config = Object.assign(default_config, config);
+
+        this._pointer = Module.ccall('shimNewVM',
+          'number',
+          [],[]
+        );
+
+        Module._VMs[this._pointer] = this;
+
+        this._foreignClasses = {};
+    }
 
     // Defaults //
     static defaultResolveModuleFn(importer, name) {
@@ -55,7 +100,7 @@ export class Configuration {
     }
 
     static defaultBindForeignMethodFn(module, className, isStatic, signature) {
-        return null;
+        return function() {};
     }
 
     static defaultBindForeignClassFn(vm, module, className) {
@@ -84,47 +129,6 @@ export class Configuration {
               str + "[Runtime Error] "+msg+"\n"
           );
         }
-    }
-}
-
-
-/**
-* A single virtual machine for executing Wren code.
-*
-* Wren has no global state, so all state stored by a running interpreter lives here.
-*/
-export class VM {
-
-    /**
-    * Creates a new Wren virtual machine using the given [configuration]. Wren
-    * will copy the configuration data, so the argument passed to this can be
-    * freed after calling this. If [configuration] is undefined, uses a default
-    * configuration.
-    * @param {Object} configuration
-    * an object containing any or all of the following properties:
-    * resolveModuleFn, loadModuleFn, bindForeignMethodFn, bindForeignClassFn,
-    * writeFn, errorFn
-    */
-    constructor(config) {
-        // Replaces wrenInitConfiguration
-        let default_config = {
-            resolveModuleFn     : Configuration.defaultResolveModuleFn,
-            loadModuleFn        : Configuration.defaultLoadModuleFn,
-            bindForeignMethodFn : Configuration.defaultBindForeignMethodFn,
-            bindForeignClassFn  : Configuration.defaultBindForeignClassFn,
-            writeFn             : Configuration.defaultWriteFn,
-            errorFn             : Configuration.defaultErrorFn
-        }
-        this.config = Object.assign(default_config, config);
-
-        this._pointer = Module.ccall('shimNewVM',
-          'number',
-          [],[]
-        );
-
-        Module._VMs[this._pointer] = this;
-
-        this._foreignClasses = {};
     }
 
     /*
@@ -195,7 +199,7 @@ export class VM {
     */
 
     /**
-    * Disposes of all resources is use by the VM.
+    * Disposes of all resources in use by the VM.
     */
     free() {
         Module.ccall('wrenFreeVM',
@@ -221,9 +225,9 @@ export class VM {
     /**
     * Runs [source], a string of Wren source code in a new fiber in [vm] in the
     * context of resolved [module].
-    * @return {string} whether the result was a success or error.
-    * @param {string} module
-    * @param {string} src
+    * @return {string} whether the result was a success or an error.
+    * @param {string} module the name of the wren module.
+    * @param {string} src the wren source code to interpret
     */
     interpret(module, src) {
         let r = Module.ccall('wrenInterpret',
@@ -250,7 +254,7 @@ export class VM {
     * When you are done with this handle, it must be released using
     * [releaseHandle].
     * @return {number} a handle for use with [VM.call].
-    * @param {string} signature
+    * @param {string} signature a string depicting the signature of a wren method.
     */
     makeCallHandle(signature) {
         let handle = Module.ccall('wrenMakeCallHandle',
@@ -273,7 +277,7 @@ export class VM {
     *
     * After this returns, you can access the return value from slot 0 on the stack.
     * @return {string} whether the result was a success or error.
-    * @param {number} method
+    * @param {number} method the handle returned from makeCallHandle.
     */
     call(method) {
         let r = Module.ccall('wrenCall',
@@ -286,7 +290,7 @@ export class VM {
           'WREN_RESULT_SUCCESS',
           'WREN_RESULT_COMPILE_ERROR',
           'WREN_RESULT_RUNTIME_ERROR'
-        ]; // TODO: Pull out into an enum.
+        ];
 
         return results[r];
     }
@@ -294,7 +298,7 @@ export class VM {
     /**
     * Releases the reference stored in [handle]. After calling this, [handle] can
     * no longer be used.
-    * @param {number} handle
+    * @param {number} handle the handle returned from makeCallHandle.
     */
     releaseHandle(handle) {
         Module.ccall('wrenReleaseHandle',
@@ -324,7 +328,7 @@ export class VM {
     * Does not shrink the stack if it has more than enough slots.
     *
     * It is an error to call this from a finalizer.
-    * @param {number} numSlots
+    * @param {number} numSlots the number of slots needed.
     */
     ensureSlots(numSlots) {
         Module.ccall('wrenEnsureSlots',
@@ -337,7 +341,7 @@ export class VM {
     /**
     * Gets the type of the object in [slot].
     * @return {string} the type of the object.
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     getSlotType(slot) {
         let t = Module.ccall('wrenGetSlotType',
@@ -364,8 +368,8 @@ export class VM {
     * Reads a boolean value from [slot].
     *
     * It is an error to call this if the slot does not contain a boolean value.
-    * @return {boolean}
-    * @param {number} slot
+    * @return {boolean} the value stored in the slot.
+    * @param {number} slot the index of the slot.
     */
     getSlotBool(slot) {
         let boolean = Module.ccall('wrenGetSlotBool',
@@ -388,8 +392,8 @@ export class VM {
     *
     * It is an error to call this if the slot does not contain a string.
     * @return {string} the bytes as a string.
-    * @param {number} slot
-    * @param {number} length
+    * @param {number} slot the index of the slot.
+    * @param {number} length the length of the bytes.
     */
     getSlotBytes(slot, length) {
         let bytes = Module.ccall('wrenGetSlotBytes',
@@ -404,8 +408,8 @@ export class VM {
     * Reads a number from [slot].
     *
     * It is an error to call this if the slot does not contain a number.
-    * @return {number}
-    * @param {number} slot
+    * @return {number} the value stored in the slot.
+    * @param {number} slot the index of the slot.
     */
     getSlotDouble(slot) {
         let double = Module.ccall('wrenGetSlotDouble',
@@ -422,8 +426,8 @@ export class VM {
     *
     * It is an error to call this if the slot does not contain an instance of a
     * foreign class.
-    * @return {Object}
-    * @param {number} slot
+    * @return {Object} the JavaScript Object stored in the slot.
+    * @param {number} slot the index of the slot.
     */
     getSlotForeign(slot) {
         let pointer = Module.ccall('wrenGetSlotForeign',
@@ -444,8 +448,8 @@ export class VM {
     * TODO: Is it?
     *
     * It is an error to call this if the slot does not contain a string.
-    * @return {string}
-    * @param {number} slot
+    * @return {string} the string stored in the slot.
+    * @param {number} slot the index of the slot.
     */
     getSlotString(slot) {
         let string = Module.ccall('wrenGetSlotString',
@@ -462,7 +466,7 @@ export class VM {
     * This will prevent the object that is referred to from being garbage collected
     * until the handle is released by calling [releaseHandle()].
     * @return {number} a handle for use with [VM.call].
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     getSlotHandle(slot) {
         let handle = Module.ccall('wrenGetSlotHandle',
@@ -475,8 +479,8 @@ export class VM {
 
     /**
     * Stores the boolean [value] in [slot].
-    * @param {number} slot
-    * @param {boolean} value
+    * @param {number} slot the index of the slot.
+    * @param {boolean} value the boolean to store.
     */
     setSlotBool(slot, value) {
         Module.ccall('wrenSetSlotBool',
@@ -491,9 +495,9 @@ export class VM {
     *
     * The bytes are copied to a new string within Wren's heap, so you can free
     * memory used by them after this is called.
-    * @param {number} slot
-    * @param {string} bytes
-    * @param {number} length
+    * @param {number} slot the index of the slot.
+    * @param {string} bytes the bytes to store.
+    * @param {number} length the length of the bytes.
     */
     setSlotBytes(slot, bytes, length) {
         Module.ccall('wrenSetSlotBytes',
@@ -505,8 +509,8 @@ export class VM {
 
     /**
     * Stores the numeric [value] in [slot].
-    * @param {number} slot
-    * @param {number} value
+    * @param {number} slot the index of the slot.
+    * @param {number} value the value to store.
     */
     setSlotDouble(slot, value) {
         Module.ccall('wrenSetSlotDouble',
@@ -526,9 +530,9 @@ export class VM {
     * and then the constructor will be invoked when the allocator returns.
     *
     * @return {Object} the same foreignObject you passed in.
-    * @param {number} slot
-    * @param {number} classSlot
-    * @param {Object} foreignObject
+    * @param {number} slot the index of the slot.
+    * @param {number} classSlot the slot containing the foreign class.
+    * @param {Object} foreignObject a JavaScript class.
     */
     setSlotNewForeign(slot, classSlot, foreignObject) {
         let pointer = Module.ccall('wrenSetSlotNewForeign',
@@ -544,7 +548,7 @@ export class VM {
 
     /**
     * Stores a new empty list in [slot].
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     setSlotNewList(slot) {
         Module.ccall('wrenSetSlotNewList',
@@ -556,7 +560,7 @@ export class VM {
 
     /**
     * Stores a new empty map in [slot].
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     setSlotNewMap(slot) {
         Module.ccall('wrenSetSlotNewMap',
@@ -568,7 +572,7 @@ export class VM {
 
     /**
     * Stores null in [slot].
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     setSlotNull(slot) {
         Module.ccall('wrenSetSlotNull',
@@ -585,8 +589,8 @@ export class VM {
     * memory used by it after this is called. The length is calculated using
     * [strlen()]. If the string may contain any null bytes in the middle, then you
     * should use [setSlotBytes()] instead.
-    * @param {number} slot
-    * @param {string} text
+    * @param {number} slot the index of the slot.
+    * @param {string} text the string to store.
     */
     setSlotString(slot, text) {
         Module.ccall('wrenSetSlotString',
@@ -600,8 +604,8 @@ export class VM {
     * Stores the value captured in [handle] in [slot].
     *
     * This does not release the handle for the value.
-    * @param {number} slot
-    * @param {number} handle
+    * @param {number} slot the index of the slot.
+    * @param {number} handle a handle returned from makeCallHandle.
     */
     setSlotHandle(slot, handle) {
         Module.ccall('wrenSetSlotHandle',
@@ -613,8 +617,8 @@ export class VM {
 
     /**
     * Returns the number of elements in the list stored in [slot].
-    * @return {number}
-    * @param {number} slot
+    * @return {number} the number of elements in the list.
+    * @param {number} slot the index of the slot.
     */
     getListCount(slot) {
         let count = Module.ccall('wrenGetListCount',
@@ -675,8 +679,8 @@ export class VM {
 
     /**
     * Returns the number of entries in the map stored in [slot].
-    * @return {number}
-    * @param {number} slot
+    * @return {number} the number of entries in the map.
+    * @param {number} slot the index of the slot.
     */
     getMapCount(slot) {
         let count = Module.ccall('wrenGetMapCount',
@@ -689,9 +693,9 @@ export class VM {
 
     /**
     * Returns true if the key in [keySlot] is found in the map placed in [mapSlot].
-    * @return {boolean}
-    * @param {number} mapSlot
-    * @param {number} keySlot
+    * @return {boolean} whether the map contains the key.
+    * @param {number} mapSlot a slot containing the map.
+    * @param {number} keySlot a slot containing the key.
     */
     getMapContainsKey(mapSlot, keySlot) {
         let boolean = Module.ccall('wrenGetMapContainsKey',
@@ -705,9 +709,9 @@ export class VM {
     /**
     * Retrieves a value with the key in [keySlot] from the map in [mapSlot] and
     * stores it in [valueSlot].
-    * @param {number} mapSlot
-    * @param {number} keySlot
-    * @param {number} valueSlot
+    * @param {number} mapSlot a slot containing the map.
+    * @param {number} keySlot a slot containing the key.
+    * @param {number} valueSlot a slot to place the value.
     */
     getMapValue(mapSlot, keySlot, valueSlot) {
         Module.ccall('wrenGetMapValue',
@@ -720,9 +724,9 @@ export class VM {
     /**
     * Takes the value stored at [valueSlot] and inserts it into the map stored
     * at [mapSlot] with key [keySlot].
-    * @param {number} mapSlot
-    * @param {number} keySlot
-    * @param {number} valueSlot
+    * @param {number} mapSlot a slot containing the map.
+    * @param {number} keySlot a slot containing the key to add.
+    * @param {number} valueSlot a slot containing the key's value.
     */
     setMapValue(mapSlot, keySlot, valueSlot) {
         Module.ccall('wrenSetMapValue',
@@ -736,9 +740,9 @@ export class VM {
     * Removes a value from the map in [mapSlot], with the key from [keySlot],
     * and place it in [removedValueSlot]. If not found, [removedValueSlot] is
     * set to null, the same behaviour as the Wren Map API.
-    * @param {number} mapSlot
-    * @param {number} keySlot
-    * @param {number} removedValueSlot
+    * @param {number} mapSlot a slot containing the map.
+    * @param {number} keySlot a slot containing the key to remove.
+    * @param {number} removedValueSlot a slot to contain the removed value.
     */
     removeMapValue(mapSlot, keySlot, removedValueSlot) {
         Module.ccall('wrenRemoveMapValue',
@@ -751,9 +755,9 @@ export class VM {
     /**
     * Looks up the top level variable with [name] in resolved [module] and stores
     * it in [slot].
-    * @param {string} module`
-    * @param {string} name
-    * @param {number} slot
+    * @param {string} module the name of the wren module.
+    * @param {string} name the name of the variable.
+    * @param {number} slot the index of the slot.
     */
     getVariable(module, name, slot) {
         Module.ccall('wrenGetVariable',
@@ -767,9 +771,9 @@ export class VM {
     * Looks up the top level variable with [name] in resolved [module],
     * returns false if not found. The module must be imported at the time,
     * use wrenHasModule to ensure that before calling.
-    * @return {boolean}
-    * @param {string} module`
-    * @param {string} name
+    * @return {boolean} whether the variable exists in module.
+    * @param {string} module the name of the wren module.
+    * @param {string} name the name of the variable.
     */
     hasVariable(module, name) {
         let boolean = Module.ccall('wrenHasVariable',
@@ -782,8 +786,8 @@ export class VM {
 
     /**
     * Returns true if [module] has been imported/resolved before, false if not.
-    * @return {boolean}
-    * @param {string} module`
+    * @return {boolean} whether the module has been imported/resolved before.
+    * @param {string} module the name of the wren module.
     */
     hasModule(module) {
         let boolean = Module.ccall('wrenHasModule',
@@ -797,7 +801,7 @@ export class VM {
     /**
     * Sets the current fiber to be aborted, and uses the value in [slot] as the
     * runtime error object.
-    * @param {number} slot
+    * @param {number} slot the index of the slot.
     */
     abortFiber(slot) {
         Module.ccall('wrenAbortFiber',

@@ -20,17 +20,11 @@ if ! [[ -d "./wren" ]]; then
     # clone wren
     git clone https://github.com/wren-lang/wren.git --branch 0.4.0
 
+    # We generate an 'amalgamation' of the wren source.
+    # since it's a bit easier to work with one single file.
     cd wren
     python3 util/generate_amalgamation.py > wren.c
     cd ../
-
-    # If we're pulling it, we might as well get it built.
-    # That will save time later during dev, as we aren't changing wren's code.
-    # Use emscripten to generate a bytecode libwren.a
-
-    #cd wren/projects/make
-    #emmake make config=release_32bit wren
-    #cd ../../../
 fi
 
 # Next we create a temporary directory in our src for generated files.
@@ -63,12 +57,12 @@ fn="$fn]"
 emcc -DWREN_OPT_RANDOM -DWREN_OPT_META \
     wren/wren.c src/shim.c -I wren/src/include -o src/generated/libwren.js \
     -O3 -s WASM=1 \
-    -s ASSERTIONS=0 -s ENVIRONMENT='web' \
+    -s ASSERTIONS=0 -s ENVIRONMENT='web,node' \
     -s JS_MATH=1 -s WASM_ASYNC_COMPILATION=0 \
     -s MODULARIZE=1 -s EXPORT_ES6=1 \
     -s FILESYSTEM=0 -s SINGLE_FILE=1 \
     -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 \
-    -s INCOMING_MODULE_JS_API=[] \
+    -s INCOMING_MODULE_JS_API=[] -s DYNAMIC_EXECUTION=0 \
     -s EXPORTED_RUNTIME_METHODS=["ccall","addFunction"] \
     -s EXPORTED_FUNCTIONS=$fn \
     -Werror --memory-init-file 0 \
@@ -88,11 +82,12 @@ npx uglifyjs ./src/generated/wren-bundle.js \
 
 # Generate our documentation
 rm -r docs
-npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js
+npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js ./README.md
 
 # clean up
 rm -r src/generated
 
-echo "done."
-
+# run some of the tests in wren/test.
+# some of these will fail, but major errors can indicate something is broken.
+#echo "[Running tests in './wren/test/']"
 #npm run test
