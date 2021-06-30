@@ -89,5 +89,5 @@ rm -r src/generated
 
 # run some of the tests in wren/test.
 # some of these will fail, but major errors can indicate something is broken.
-#echo "[Running tests in './wren/test/']"
-#npm run test
+echo "[Running tests in './wren/test/benchmark']"
+npm run test

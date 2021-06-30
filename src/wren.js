@@ -1,6 +1,7 @@
 /**
  * @overview
  * The wren programming language in your browser!
+ * <br>
  *
  * @example
  * import * as Wren from "../out/wren.js";
@@ -8,10 +9,10 @@
  * let vm = new Wren.VM({
  *   resolveModuleFn     : function(importer, name) {...},
  *   loadModuleFn        : function(name) {...},
- *   bindForeignMethodFn : function(module, className, isStatic, signature) {...},
- *   bindForeignClassFn  : function(module, className) {...},
+ *   bindForeignMethodFn : function(moduleName, className, isStatic, signature) {...},
+ *   bindForeignClassFn  : function(moduleName, className) {...},
  *   writeFn             : function(toLog) {...},
- *   errorFn             : function(errorType, module, line, msg) {...}
+ *   errorFn             : function(errorType, moduleName, line, msg) {...}
  * });
  *
  * vm.interpret("main", `
@@ -67,6 +68,18 @@ export var ErrorType = {
   STACK_TRACE:  2
 }
 
+/**
+* The result of a VM interpreting wren source.
+* @property {number} SUCCESS the VM interpreted the source without error.
+* @property {number} COMPILE_ERROR the VM experienced a compile error.
+* @property {number} RUNTIME_ERROR the VM experienced a runtime error.
+*/
+export var Result = {
+  SUCCESS:        0,
+  COMPILE_ERROR:  1,
+  RUNTIME_ERROR:  2
+}
+
 
 /**
 * A single virtual machine for executing Wren code.
@@ -82,11 +95,13 @@ export class VM {
     * resolveModuleFn, loadModuleFn, bindForeignMethodFn, bindForeignClassFn,
     * writeFn, errorFn.
     *
-    * @example
     * let vm = new Wren.VM({
-    *   writeFn: function(toWrite) {
-    *     console.log(toWrite);
-    *   }
+    *   resolveModuleFn     : function(importer, name) {...},
+    *   loadModuleFn        : function(name) {...},
+    *   bindForeignMethodFn : function(moduleName, className, isStatic, signature) {...},
+    *   bindForeignClassFn  : function(moduleName, className) {...},
+    *   writeFn             : function(toLog) {...},
+    *   errorFn             : function(errorType, moduleName, line, msg) {...}
     * });
     */
     constructor(config) {
@@ -120,11 +135,11 @@ export class VM {
         return null;
     }
 
-    static defaultBindForeignMethodFn(module, className, isStatic, signature) {
+    static defaultBindForeignMethodFn(moduleName, className, isStatic, signature) {
         return function(vm) {};
     }
 
-    static defaultBindForeignClassFn(module, className) {
+    static defaultBindForeignClassFn(moduleName, className) {
         return null;
     }
 
@@ -133,16 +148,16 @@ export class VM {
         console.log(str + toLog);
     }
 
-    static defaultErrorFn(errorType, module, line, msg) {
+    static defaultErrorFn(errorType, moduleName, line, msg) {
         let str = 'WRENJS: ';
         if (errorType == 0) {
           console.warn(
-              str + "["+module+" line " +line+ "] [Error] "+msg+"\n"
+              str + "["+moduleName+" line " +line+ "] [Error] "+msg+"\n"
           );
         }
         if (errorType == 1) {
           console.warn(
-              str + "["+module+" line "+line+"] in "+msg+"\n"
+              str + "["+moduleName+" line "+line+"] in "+msg+"\n"
           );
         }
         if (errorType == 2) {
@@ -166,9 +181,9 @@ export class VM {
         return this.config.loadModuleFn(name);
     }
 
-    _bindForeignMethod(module, className, isStatic, signature) {
+    _bindForeignMethod(moduleName, className, isStatic, signature) {
         // This should return a function looking for a Wren.VM as its only arg.
-        let method = this.config.bindForeignMethodFn(module, className,
+        let method = this.config.bindForeignMethodFn(moduleName, className,
           isStatic, signature
         );
 
@@ -180,8 +195,8 @@ export class VM {
         return wrappedMethod;
     }
 
-    _bindForeignClass(module, className) {
-        var methods =  this.config.bindForeignClassFn(module, className);
+    _bindForeignClass(moduleName, className) {
+        var methods =  this.config.bindForeignClassFn(moduleName, className);
 
         // Similar to the bindForeignMethod fn above, C expects to pass these
         // a pointer to the VM, and we need to convert that to a JS Wren.VM
@@ -209,8 +224,8 @@ export class VM {
         this.config.writeFn(text);
     }
 
-    _error(errorType, module, line, msg) {
-        this.config.errorFn(errorType, module, line, msg);
+    _error(errorType, moduleName, line, msg) {
+        this.config.errorFn(errorType, moduleName, line, msg);
     }
 
     /*
@@ -245,24 +260,18 @@ export class VM {
 
     /**
     * Runs [source], a string of Wren source code in a new fiber in [vm] in the
-    * context of resolved [module].
+    * context of resolved [moduleName].
     * @return {string} whether the result was a success or an error.
-    * @param {string} module the name of the wren module.
+    * @param {string} moduleName the name of the wren module.
     * @param {string} src the wren source code to interpret
     */
-    interpret(module, src) {
-        let r = Module.ccall('wrenInterpret',
+    interpret(moduleName, src) {
+        let result = Module.ccall('wrenInterpret',
             'number',
             ['number', 'string', 'string'],
-            [this._pointer, module, src]);
+            [this._pointer, moduleName, src]);
 
-        let results = [
-          'WREN_RESULT_SUCCESS',
-          'WREN_RESULT_COMPILE_ERROR',
-          'WREN_RESULT_RUNTIME_ERROR'
-        ];
-
-        return results[r];
+        return result;
     }
 
     /**
@@ -301,19 +310,13 @@ export class VM {
     * @param {number} method the handle returned from makeCallHandle.
     */
     call(method) {
-        let r = Module.ccall('wrenCall',
+        let result = Module.ccall('wrenCall',
           'number',
           ['number', 'number'],
           [this._pointer, method]
         );
 
-        let results = [
-          'WREN_RESULT_SUCCESS',
-          'WREN_RESULT_COMPILE_ERROR',
-          'WREN_RESULT_RUNTIME_ERROR'
-        ];
-
-        return results[r];
+        return result;
     }
 
     /**
@@ -774,47 +777,47 @@ export class VM {
     }
 
     /**
-    * Looks up the top level variable with [name] in resolved [module] and stores
+    * Looks up the top level variable with [name] in resolved [moduleName] and stores
     * it in [slot].
-    * @param {string} module the name of the wren module.
+    * @param {string} moduleName the name of the wren moduleName.
     * @param {string} name the name of the variable.
     * @param {number} slot the index of the slot.
     */
-    getVariable(module, name, slot) {
+    getVariable(moduleName, name, slot) {
         Module.ccall('wrenGetVariable',
           null,
           ['number', 'string', 'string', 'number'],
-          [this._pointer, module, name, slot]
+          [this._pointer, moduleName, name, slot]
         );
     }
 
     /**
-    * Looks up the top level variable with [name] in resolved [module],
+    * Looks up the top level variable with [name] in resolved [moduleName],
     * returns false if not found. The module must be imported at the time,
     * use wrenHasModule to ensure that before calling.
     * @return {boolean} whether the variable exists in module.
-    * @param {string} module the name of the wren module.
+    * @param {string} moduleName the name of the wren module.
     * @param {string} name the name of the variable.
     */
-    hasVariable(module, name) {
+    hasVariable(moduleName, name) {
         let boolean = Module.ccall('wrenHasVariable',
           'boolean',
           ['number', 'string', 'string'],
-          [this._pointer, module, name]
+          [this._pointer, moduleName, name]
         );
         return boolean;
     }
 
     /**
-    * Returns true if [module] has been imported/resolved before, false if not.
+    * Returns true if [moduleName] has been imported/resolved before, false if not.
     * @return {boolean} whether the module has been imported/resolved before.
-    * @param {string} module the name of the wren module.
+    * @param {string} moduleName the name of the wren module.
     */
-    hasModule(module) {
+    hasModule(moduleName) {
         let boolean = Module.ccall('wrenHasModule',
           'boolean',
           ['number', 'string'],
-          [this._pointer, module]
+          [this._pointer, moduleName]
         );
         return boolean;
     }

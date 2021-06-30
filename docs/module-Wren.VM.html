@@ -107,7 +107,7 @@ configuration.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line74">line 74</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line87">line 87</a>
     </li></ul></dd>
     
 
@@ -171,6 +171,15 @@ configuration.
                 an object containing any or all of the following properties:
 resolveModuleFn, loadModuleFn, bindForeignMethodFn, bindForeignClassFn,
 writeFn, errorFn.
+
+let vm = new Wren.VM({
+  resolveModuleFn     : function(importer, name) {...},
+  loadModuleFn        : function(name) {...},
+  bindForeignMethodFn : function(moduleName, className, isStatic, signature) {...},
+  bindForeignClassFn  : function(moduleName, className) {...},
+  writeFn             : function(toLog) {...},
+  errorFn             : function(errorType, moduleName, line, msg) {...}
+});
                 
             </td>
         </tr>
@@ -193,17 +202,6 @@ writeFn, errorFn.
 
 
 
-
-<div class="section-examples">
-<h5>Example</h5>
-
-    <pre class="prettyprint"><code>let vm = new Wren.VM({
-  writeFn: function(toWrite) {
-    console.log(toWrite);
-  }
-});</code></pre>
-
-</div>
 
 </div>
     
@@ -274,7 +272,7 @@ runtime error object.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line827">line 827</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line830">line 830</a>
     </li></ul></dd>
     
 
@@ -418,7 +416,7 @@ After this returns, you can access the return value from slot 0 on the stack.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line303">line 303</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -578,7 +576,7 @@ After this returns, you can access the return value from slot 0 on the stack.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line238">line 238</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line253">line 253</a>
     </li></ul></dd>
     
 
@@ -666,7 +664,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line354">line 354</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line357">line 357</a>
     </li></ul></dd>
     
 
@@ -801,7 +799,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line225">line 225</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line240">line 240</a>
     </li></ul></dd>
     
 
@@ -884,7 +882,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line644">line 644</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line647">line 647</a>
     </li></ul></dd>
     
 
@@ -1045,7 +1043,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line660">line 660</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line663">line 663</a>
     </li></ul></dd>
     
 
@@ -1232,7 +1230,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line721">line 721</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line724">line 724</a>
     </li></ul></dd>
     
 
@@ -1418,7 +1416,7 @@ It is an error to call this from a finalizer.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line706">line 706</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line709">line 709</a>
     </li></ul></dd>
     
 
@@ -1579,7 +1577,7 @@ stores it in [valueSlot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line737">line 737</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line740">line 740</a>
     </li></ul></dd>
     
 
@@ -1768,7 +1766,7 @@ It is an error to call this if the slot does not contain a boolean value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line395">line 395</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line398">line 398</a>
     </li></ul></dd>
     
 
@@ -1937,7 +1935,7 @@ It is an error to call this if the slot does not contain a string.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line419">line 419</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line422">line 422</a>
     </li></ul></dd>
     
 
@@ -2123,7 +2121,7 @@ It is an error to call this if the slot does not contain a string.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line336">line 336</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line339">line 339</a>
     </li></ul></dd>
     
 
@@ -2233,7 +2231,7 @@ It is an error to call this if the slot does not contain a number.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line435">line 435</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line438">line 438</a>
     </li></ul></dd>
     
 
@@ -2397,7 +2395,7 @@ foreign class.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line453">line 453</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line456">line 456</a>
     </li></ul></dd>
     
 
@@ -2560,7 +2558,7 @@ until the handle is released by calling [releaseHandle()].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line492">line 492</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line495">line 495</a>
     </li></ul></dd>
     
 
@@ -2727,7 +2725,7 @@ It is an error to call this if the slot does not contain a string.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line475">line 475</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line478">line 478</a>
     </li></ul></dd>
     
 
@@ -2887,7 +2885,7 @@ It is an error to call this if the slot does not contain a string.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line367">line 367</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line370">line 370</a>
     </li></ul></dd>
     
 
@@ -3004,14 +3002,14 @@ It is an error to call this if the slot does not contain a string.
 
     
 
-    <h4 class="name" id="getVariable"><span class="type-signature"></span>getVariable<span class="signature">(module, name, slot)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getVariable"><span class="type-signature"></span>getVariable<span class="signature">(moduleName, name, slot)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Looks up the top level variable with [name] in resolved [module] and stores
+    Looks up the top level variable with [name] in resolved [moduleName] and stores
 it in [slot].
 </div>
 
@@ -3048,7 +3046,7 @@ it in [slot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line783">line 783</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line786">line 786</a>
     </li></ul></dd>
     
 
@@ -3092,7 +3090,7 @@ it in [slot].
 
         <tr>
             
-                <td class="name"><code>module</code></td>
+                <td class="name"><code>moduleName</code></td>
             
 
             <td class="type">
@@ -3109,7 +3107,7 @@ it in [slot].
             
 
             <td class="description last">
-                the name of the wren module.
+                the name of the wren moduleName.
                 
             </td>
         </tr>
@@ -3192,14 +3190,14 @@ it in [slot].
 
     
 
-    <h4 class="name" id="hasModule"><span class="type-signature"></span>hasModule<span class="signature">(module)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="hasModule"><span class="type-signature"></span>hasModule<span class="signature">(moduleName)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
 
 <div class="description">
-    Returns true if [module] has been imported/resolved before, false if not.
+    Returns true if [moduleName] has been imported/resolved before, false if not.
 </div>
 
 
@@ -3235,7 +3233,7 @@ it in [slot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line813">line 813</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line816">line 816</a>
     </li></ul></dd>
     
 
@@ -3279,7 +3277,7 @@ it in [slot].
 
         <tr>
             
-                <td class="name"><code>module</code></td>
+                <td class="name"><code>moduleName</code></td>
             
 
             <td class="type">
@@ -3352,14 +3350,14 @@ it in [slot].
 
     
 
-    <h4 class="name" id="hasVariable"><span class="type-signature"></span>hasVariable<span class="signature">(module, name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="hasVariable"><span class="type-signature"></span>hasVariable<span class="signature">(moduleName, name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
 
 <div class="description">
-    Looks up the top level variable with [name] in resolved [module],
+    Looks up the top level variable with [name] in resolved [moduleName],
 returns false if not found. The module must be imported at the time,
 use wrenHasModule to ensure that before calling.
 </div>
@@ -3397,7 +3395,7 @@ use wrenHasModule to ensure that before calling.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line799">line 799</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line802">line 802</a>
     </li></ul></dd>
     
 
@@ -3441,7 +3439,7 @@ use wrenHasModule to ensure that before calling.
 
         <tr>
             
-                <td class="name"><code>module</code></td>
+                <td class="name"><code>moduleName</code></td>
             
 
             <td class="type">
@@ -3587,7 +3585,7 @@ an element, use `-1` for the index.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line693">line 693</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line696">line 696</a>
     </li></ul></dd>
     
 
@@ -3731,7 +3729,7 @@ an element, use `-1` for the index.
 
     
 
-    <h4 class="name" id="interpret"><span class="type-signature"></span>interpret<span class="signature">(module, src)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="interpret"><span class="type-signature"></span>interpret<span class="signature">(moduleName, src)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
@@ -3739,7 +3737,7 @@ an element, use `-1` for the index.
 
 <div class="description">
     Runs [source], a string of Wren source code in a new fiber in [vm] in the
-context of resolved [module].
+context of resolved [moduleName].
 </div>
 
 
@@ -3775,7 +3773,7 @@ context of resolved [module].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line253">line 253</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -3819,7 +3817,7 @@ context of resolved [module].
 
         <tr>
             
-                <td class="name"><code>module</code></td>
+                <td class="name"><code>moduleName</code></td>
             
 
             <td class="type">
@@ -3968,7 +3966,7 @@ When you are done with this handle, it must be released using
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line280">line 280</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -4129,7 +4127,7 @@ no longer be used.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line324">line 324</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line327">line 327</a>
     </li></ul></dd>
     
 
@@ -4266,7 +4264,7 @@ set to null, the same behaviour as the Wren Map API.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line768">line 768</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line771">line 771</a>
     </li></ul></dd>
     
 
@@ -4454,7 +4452,7 @@ to the value from [elementSlot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line675">line 675</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line678">line 678</a>
     </li></ul></dd>
     
 
@@ -4642,7 +4640,7 @@ at [mapSlot] with key [keySlot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line752">line 752</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line755">line 755</a>
     </li></ul></dd>
     
 
@@ -4829,7 +4827,7 @@ at [mapSlot] with key [keySlot].
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line506">line 506</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line509">line 509</a>
     </li></ul></dd>
     
 
@@ -4993,7 +4991,7 @@ memory used by them after this is called.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line523">line 523</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line526">line 526</a>
     </li></ul></dd>
     
 
@@ -5180,7 +5178,7 @@ memory used by them after this is called.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line536">line 536</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line539">line 539</a>
     </li></ul></dd>
     
 
@@ -5343,7 +5341,7 @@ This does not release the handle for the value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line631">line 631</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line634">line 634</a>
     </li></ul></dd>
     
 
@@ -5510,7 +5508,7 @@ and then the constructor will be invoked when the allocator returns.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line558">line 558</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line561">line 561</a>
     </li></ul></dd>
     
 
@@ -5722,7 +5720,7 @@ and then the constructor will be invoked when the allocator returns.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line574">line 574</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line577">line 577</a>
     </li></ul></dd>
     
 
@@ -5857,7 +5855,7 @@ and then the constructor will be invoked when the allocator returns.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line586">line 586</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line589">line 589</a>
     </li></ul></dd>
     
 
@@ -5992,7 +5990,7 @@ and then the constructor will be invoked when the allocator returns.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line598">line 598</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line601">line 601</a>
     </li></ul></dd>
     
 
@@ -6132,7 +6130,7 @@ should use [setSlotBytes()] instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line616">line 616</a>
+        <a href="wren.js.html">wren.js</a>, <a href="wren.js.html#line619">line 619</a>
     </li></ul></dd>
     
 
@@ -6262,7 +6260,7 @@ should use [setSlotBytes()] instead.
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Wed Jun 30 2021 13:10:55 GMT-0500 (Central Daylight Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Wed Jun 30 2021 15:39:29 GMT-0500 (Central Daylight Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
