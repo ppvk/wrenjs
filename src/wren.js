@@ -1,6 +1,22 @@
 /**
  * @overview
  * The wren programming language in your browser!
+ *
+ * @example
+ * import * as Wren from "../out/wren.js";
+ *
+ * let vm = new Wren.VM({
+ *   resolveModuleFn     : function(importer, name) {...},
+ *   loadModuleFn        : function(name) {...},
+ *   bindForeignMethodFn : function(module, className, isStatic, signature) {...},
+ *   bindForeignClassFn  : function(module, className) {...},
+ *   writeFn             : function(toLog) {...},
+ *   errorFn             : function(errorType, module, line, msg) {...}
+ * });
+ *
+ * vm.interpret("main", `
+ *   System.print("Hello from Wren!")
+ * `);
  */
 
 /**
@@ -105,10 +121,10 @@ export class VM {
     }
 
     static defaultBindForeignMethodFn(module, className, isStatic, signature) {
-        return function() {};
+        return function(vm) {};
     }
 
-    static defaultBindForeignClassFn(vm, module, className) {
+    static defaultBindForeignClassFn(module, className) {
         return null;
     }
 
@@ -165,7 +181,7 @@ export class VM {
     }
 
     _bindForeignClass(module, className) {
-        var methods =  this.config.bindForeignClassFn(this, module, className);
+        var methods =  this.config.bindForeignClassFn(module, className);
 
         // Similar to the bindForeignMethod fn above, C expects to pass these
         // a pointer to the VM, and we need to convert that to a JS Wren.VM
