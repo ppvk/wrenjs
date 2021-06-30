@@ -82,7 +82,7 @@ npx uglifyjs ./src/generated/wren-bundle.js \
 
 # Generate our documentation
 rm -r docs
-npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js ./README.md
+npx jsdoc --template ./node_modules/minami -d docs ./src/wren.js
 
 # clean up
 rm -r src/generated

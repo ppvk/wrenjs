@@ -1,4 +1,9 @@
 /**
+ * @overview
+ * The wren programming language in your browser!
+ */
+
+/**
  * wrenjs is an ES6 module.
  *
  * @example
