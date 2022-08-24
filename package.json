@@ -1,6 +1,6 @@
 {
   "name": "wrenjs",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Using emscripten to transpile the wren programming language to Javascript.",
   "main": "out/wren.min.js",
   "scripts": {

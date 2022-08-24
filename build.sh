@@ -57,7 +57,7 @@ fn="$fn]"
 emcc -DWREN_OPT_RANDOM -DWREN_OPT_META \
     wren/wren.c src/shim.c -I wren/src/include -o src/generated/libwren.js \
     -O3 -s WASM=1 \
-    -s ASSERTIONS=0 -s ENVIRONMENT='web,node' \
+    -s ASSERTIONS=0 -s ENVIRONMENT='web' \
     -s JS_MATH=1 -s WASM_ASYNC_COMPILATION=0 \
     -s MODULARIZE=1 -s EXPORT_ES6=1 \
     -s FILESYSTEM=0 -s SINGLE_FILE=1 \
