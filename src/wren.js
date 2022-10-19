@@ -136,7 +136,7 @@ export class VM {
     }
 
     static defaultBindForeignMethodFn(moduleName, className, isStatic, signature) {
-        return function(vm) {};
+        return null;
     }
 
     static defaultBindForeignClassFn(moduleName, className) {
@@ -187,6 +187,10 @@ export class VM {
           isStatic, signature
         );
 
+        if (method == null) {
+          return null;
+        }
+
         // The wren C api expects a function looking for a pointer as its arg.
         let vm = this;
         let wrappedMethod = function(pointer) {
@@ -197,6 +201,10 @@ export class VM {
 
     _bindForeignClass(moduleName, className) {
         var methods =  this.config.bindForeignClassFn(moduleName, className);
+
+        if (methods == null) {
+          return null;
+        }
 
         // Similar to the bindForeignMethod fn above, C expects to pass these
         // a pointer to the VM, and we need to convert that to a JS Wren.VM
