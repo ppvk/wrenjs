@@ -225,6 +225,8 @@ WrenForeignClassMethods shimBindForeignClassFn(
     WrenForeignClassMethods methods;
 
     if (moduleShiftDouble() == 0) {
+        methods.allocate = NULL;
+        methods.finalize = NULL;
         return methods;
     } else {
       methods.allocate = shimAllocate;
