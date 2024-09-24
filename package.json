@@ -19,7 +19,7 @@
   "devDependencies": {
     "jsdoc": "^3.6.7",
     "minami": "^1.2.3",
-    "rollup": "^2.52.1",
+    "rollup": "^3.29.5",
     "uglify-js": "^3.13.9"
   }
 }
